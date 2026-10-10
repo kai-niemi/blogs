@@ -5,15 +5,42 @@ theme = "PaperMod"
 
 enableRobotsTXT = true
 
+[permalinks]
+posts = "/:slug/"
+
 [params]
-description = "Articles on distributed systems, databases, software architecture and engineering"
+author = "Kai Niemi"
+description = "Articles on distributed systems, databases and software engineering"
+hideSummary = false
 ShowReadingTime = true
 ShowToc = true
 TocOpen = false
 ShowCodeCopyButtons = true
+ShowBreadCrumbs = true
+ShowPostNavLinks = true
 
-[outputs]
-home = ["HTML", "RSS", "JSON"]
+[params.homeInfoParams]
+Title = "CloudNeutral"
+Content = "Distributed Systems · Databases · Software Architecture"
 
-[permalinks]
-posts = "/:slug/"
+[params.profileMode]
+enabled = false
+title = "CloudNeutral"
+subtitle = "Distributed Systems · Databases · Software Architecture"
+imageUrl = "/images/cover.jpg"
+imageWidth = 600
+imageHeight = 300
+
+[markup]
+[markup.highlight]
+codeFences = true
+guessSyntax = false
+lineNos = false
+noClasses = false
+style = "monokai"
+
+[[menu.main]]
+identifier = "about"
+name = "About"
+url = "/about/"
+weight = 30

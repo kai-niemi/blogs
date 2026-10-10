@@ -8,10 +8,10 @@
 <meta name="robots" content="noindex, nofollow">
 <title>CloudNeutral</title>
 
-<meta name="description" content="Articles on distributed systems, databases, software architecture and engineering">
-<meta name="author" content="">
+<meta name="description" content="Articles on distributed systems, databases and software engineering">
+<meta name="author" content="Kai Niemi">
 <link rel="canonical" href="http://localhost:1313/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.cd9298b33628769aa1bc1acebbbfd7aa11ce81dfe03484d479e1907760249a1d.css" integrity="sha256-zZKYszYodpqhvBrOu7/XqhHOgd/gNITUeeGQd2Akmh0=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.188fe59af45e7c08cb8677260a9b084a5e91eb470c2ee4b95a508c396384e724.css" integrity="sha256-GI/lmvRefAjLhncmCpsISl6R60cMLuS5WlCMOWOE5yQ=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
@@ -20,7 +20,6 @@
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
 <link rel="alternate" type="application/rss+xml" href="http://localhost:1313/index.xml" title="rss">
-<link rel="alternate" type="application/json" href="http://localhost:1313/index.json" title="json">
 <link rel="alternate" hreflang="en" href="http://localhost:1313/">
 <noscript>
     <style>
@@ -98,23 +97,48 @@
             </div>
         </div>
         <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
         </ul>
     </nav>
 </header>
-<main class="main"> 
+<main class="main"> <section class="cloudneutral-hero">
+    <div class="cloudneutral-hero-content">
+        <h1>CloudNeutral</h1>
+        <p>Distributed Systems · Databases · Software Architecture</p>
+    </div>
 
-<article class="first-entry"> 
+
+
+    <div class="cloudneutral-hero-credit">
+        Photo by
+        <a href="https://unsplash.com/photos/a-group-of-blue-boxes-ZfVyuV8l7WU"
+           target="_blank"
+           rel="noopener noreferrer">
+            Growtika
+        </a>
+        on Unsplash
+    </div>
+
+</section>
+
+<article class="post-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">Hello World
+    <h2 class="entry-hint-parent">Battery: A Workload-Driven Database Load Testing Tool
     </h2>
   </header>
   <div class="entry-content">
-    <p></p>
+    <p>Standardized benchmarks such as TPC-C, YCSB and sysbench are useful for comparing database systems under defined workloads. But those workloads rarely match an application’s specific transaction patterns, data access paths, contention characteristics or concurrency model. Reproducing those interactions under load provides a different perspective: how the database behaves under traffic shaped like your application.
+Battery is an open-source load-testing tool built for that purpose. You describe the workload using YAML, SQL and a small scripting language, then run it with potentially thousands of concurrent virtual users (VUs), optionally distributed across multiple hosts.
+...</p>
   </div>
   <footer class="entry-footer">
 
-<span title='2026-10-10 10:31:51 +0200 CEST'>October 10, 2026</span>&nbsp;·&nbsp;<span>0 min</span></footer>
-  <a class="entry-link" aria-label="post link to Hello World" href="http://localhost:1313/hello-world/"></a>
+<span title='2026-10-10 00:00:00 +0000 UTC'>October 10, 2026</span>&nbsp;·&nbsp;<span>10 min</span>&nbsp;·&nbsp;<span>Kai Niemi</span></footer>
+  <a class="entry-link" aria-label="post link to Battery: A Workload-Driven Database Load Testing Tool" href="http://localhost:1313/battery-database-load-testing/"></a>
 </article>
     </main>
     
