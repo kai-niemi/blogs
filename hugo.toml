@@ -1,0 +1,19 @@
+baseURL = "https://blog.cloudneutral.se/"
+languageCode = "en-us"
+title = "CloudNeutral"
+theme = "PaperMod"
+
+enableRobotsTXT = true
+
+[params]
+description = "Articles on distributed systems, databases, software architecture and engineering"
+ShowReadingTime = true
+ShowToc = true
+TocOpen = false
+ShowCodeCopyButtons = true
+
+[outputs]
+home = ["HTML", "RSS", "JSON"]
+
+[permalinks]
+posts = "/:slug/"
