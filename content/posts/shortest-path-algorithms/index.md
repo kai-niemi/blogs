@@ -29,12 +29,15 @@ Finding the best route between two points sounds simple until the map contains h
 different travel costs, and areas that should be avoided altogether. This is the *shortest-path problem*: given a graph
 and a cost for traversing each edge, find a path whose **total cost is minimal**.
 
-In this article, we'll work through two classic solutions— **Dijkstra's algorithm** and **A* search**—using a small
-graph that makes each decision visible. We'll also look briefly at breadth-first search (BFS), depth-first search (DFS),
-and Bellman–Ford, then put the ideas to work in a game environment and Java.
+In this article, we'll use a small graph to explore two classic shortest-path algorithms: **Dijkstra's algorithm** and
+**A* search**. We'll start with the fundamentals of graph theory and briefly explore breadth-first search (BFS),
+depth-first search (DFS), and Bellman–Ford before examining Dijkstra and A* step by step.
 
-The accompanying [shortest-path demo project](https://github.com/cloudneutral/shortestpath) includes visualizations and
-implementations.
+If you're already familiar with graph theory, feel free to jump directly to the algorithm walkthroughs. The later
+sections cover heuristic selection, Java implementation details, and a practical pathfinding example from Arma 3.
+
+The accompanying [shortest-path demo project](https://github.com/cloudneutral/shortestpath) includes visualizations
+and implementations.
 
 ## Why pathfinding matters in games
 
