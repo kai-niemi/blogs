@@ -98,7 +98,7 @@ This distinction becomes particularly important when implementing idempotent POS
 
 ## Why Idempotency Matters
 
-Distributed systems communicate over networks, and networks are unreliable.
+Distributed systems communicate over networks, and networks are [unreliable](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing).
 
 A client can send a request without knowing whether the server received it, processed it, or successfully committed its changes.
 
@@ -130,8 +130,8 @@ Did the server fail before processing the request? Did the transaction commit? W
 
 A timeout cannot answer these questions.
 
-This is a fundamental problem in distributed systems: **the absence of a response does not imply the absence of an
-effect**.
+This is a [fundamental](https://en.wikipedia.org/wiki/Two_Generals%27_Problem) problem in distributed systems: 
+**the absence of a response does not imply the absence of an effect**.
 
 The client might retry:
 
