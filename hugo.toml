@@ -18,6 +18,7 @@ TocOpen = false
 ShowCodeCopyButtons = true
 ShowBreadCrumbs = true
 ShowPostNavLinks = true
+images = ["images/cover.jpg"]
 
 [params.homeInfoParams]
 Title = "CloudNeutral"
