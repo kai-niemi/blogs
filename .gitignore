@@ -5,12 +5,12 @@
 /public/
 /resources/_gen/
 /.hugo_build.lock
+/content/public/
 
 # ==========================================
 # Hugo temporary files
 # ==========================================
 
-/.hugo_build.lock
 /hugo_stats.json
 
 # ==========================================
