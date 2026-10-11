@@ -3,6 +3,12 @@ title: "About"
 draft: false
 description: "About Kai Niemi and CloudNeutral"
 ShowToc: false
+url: "/about/"
+cover:
+  image: "cover.webp"
+  relative: true
+  hidden: false
+  caption: 'Photo by <a href="https://unsplash.com/@mikaelstenberg">Mikael Stenberg</a> on <a href="https://unsplash.com/photos/JY6q5uNU3Es">Unsplash</a>'
 ---
 
 I'm Kai Niemi, a software engineer and architect based in Stockholm. I've spent most of my career working on distributed
