@@ -34,6 +34,8 @@ Multi-active systems take a different approach. Multiple deployment sites serve 
 allowing geographically distributed infrastructure to contribute to normal operations rather than sitting idle until a
 failure occurs.
 
+![Comparison of active-passive, asynchronous multi-active, and consensus-based multi-active architectures](replication-models.svg)
+
 ## Multi-Active Systems
 
 A multi-active system serves production traffic concurrently from multiple data centres or regions.
