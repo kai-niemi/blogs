@@ -1,6 +1,7 @@
 ---
 title: "Cluster Singleton Scheduling with Spring Boot and ShedLock"
-date: 2026-10-12
+date: 2022-10-19
+lastmod: 2026-10-12
 draft: false
 description: "Coordinating scheduled tasks across Spring Boot instances using ShedLock and database-backed locks, including configuration, failure handling, and execution guarantees."
 tags:
