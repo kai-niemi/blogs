@@ -249,7 +249,7 @@ tasks should tolerate occasional duplicate or overlapping execution.
 
 ### Idempotency
 
-Where possible, scheduled tasks should be [idempotent](/posts/designing-idempotent-rest-apis/). An idempotent operation
+Where possible, scheduled tasks should be [idempotent](/designing-idempotent-rest-apis-stateless-preconditions-and-idempotency-keys/). An idempotent operation
 can be executed repeatedly without producing additional effects beyond the first successful execution.
 
 For example, deleting expired records is generally safe to repeat, provided the deletion logic does not introduce other
@@ -268,7 +268,7 @@ ShedLock relies on atomic conditional updates to coordinate lock acquisition and
 transaction isolation. PostgreSQL's default `READ COMMITTED` isolation is sufficient. Higher isolation levels provide no
 additional benefit for lock acquisition and may introduce serialization errors under contention.
 
-The database's replication guarantees also matter. With [asynchronous replication](/posts/multi-active-architectures/), 
+The database's replication guarantees also matter. With [asynchronous replication](/multi-active-systems-and-multi-region-architectures/), 
 an acknowledged lock acquisition may be lost during failover, allowing another instance to acquire the same lock while the original task is still running.
 This applies to any primary-replica setup with asynchronous failover, regardless of geographic distribution. Properly
 configured synchronous or consensus-based replication can prevent this loss of acknowledged writes.
