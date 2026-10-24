@@ -11,20 +11,26 @@ cover:
   caption: 'Photo by <a href="https://unsplash.com/@mikaelstenberg">Mikael Stenberg</a> on <a href="https://unsplash.com/photos/JY6q5uNU3Es">Unsplash</a>'
 ---
 
-I'm Kai Niemi, a software engineer and architect based in Stockholm. I've spent most of my career working on distributed
-systems and transactional applications where correctness isn't negotiable. My background spans hands-on development,
-technical leadership, and enterprise architecture.
+I'm Kai Niemi, a software engineer and architect based in Stockholm. I've spent over 20 years building software, with a
+particular focus on distributed systems, transactional databases, and the challenges of consistency, concurrency, and
+failure handling.
+
+My background spans hands-on software development, technical leadership, enterprise architecture, and pre-sales
+engineering.
 
 ## About CloudNeutral
 
-This is where I write about distributed databases, transactional consistency, database
-performance, Java and Spring Boot, event-driven architecture, and the open-source projects I
-maintain. Mostly it's about trade-offs: what a design costs, what it buys, and what breaks
-when the assumptions change.
+CloudNeutral is where I share technical articles, experiments, and lessons learned from building and working with
+distributed systems.
+
+I write about distributed databases, transactional consistency, database performance, Java and Spring Boot, 
+event-driven architecture, and the open-source projects I maintain.
+
+Mostly it's about trade-offs: what a design costs, what it buys, and what breaks when the assumptions change.
 
 ## Elsewhere
 
-- [GitHub](https://github.com/kai-niemi)
+- [GitHub](https://github.com/kai-niemi/)
 - [LinkedIn](https://www.linkedin.com/in/kai-niemi/)
 
 ## Disclaimer
