@@ -3,7 +3,7 @@ title: "Designing Idempotent REST APIs: Stateless Preconditions and Idempotency 
 description: "Explore two approaches to making REST API operations safer to retry: stateless resource-state preconditions and idempotency keys. Learn their guarantees, trade-offs, and concurrency considerations."
 summary: "How do you safely retry a POST request when the outcome is unknown? A comparison of stateless preconditions and idempotency keys, using funds transfers as an example."
 date: 2022-10-19
-lastmod: 2026-10-10
+lastmod: 2026-10-24
 draft: false
 tags:
   - REST
@@ -105,23 +105,24 @@ A client can send a request without knowing whether the server received it, proc
 
 Consider a funds transfer between two accounts:
 
-```text
-Client                         Server
-  |                              |
-  | POST /transfers              |
-  |----------------------------->|
-  |                              |
-  |                        Validate transfer
-  |                        Debit account A
-  |                        Credit account B
-  |                        Commit transaction
-  |                              |
-  |       201 Created            |
-  |<---------- X ----------------|
-  |                              |
-  |         Timeout              |
-  |                              |
-```
+{{< mermaid >}}
+sequenceDiagram
+participant C as Client
+participant S as Server
+
+    C->>S: POST /transfers
+    activate S
+
+    Note right of S: Validate transfer
+    Note right of S: Debit account A
+    Note right of S: Credit account B
+    Note right of S: Commit transaction
+
+    S--xC: 201 Created (response lost)
+    deactivate S
+
+    Note over C: Timeout
+{{< /mermaid >}}
 
 The transfer completed successfully, but the response was lost.
 

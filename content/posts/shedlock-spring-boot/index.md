@@ -1,7 +1,7 @@
 ---
 title: "Cluster Singleton Scheduling with Spring Boot and ShedLock"
 date: 2022-10-19
-lastmod: 2026-10-12
+lastmod: 2026-10-24
 draft: false
 description: "Coordinating scheduled tasks across Spring Boot instances using ShedLock and database-backed locks, including configuration, failure handling, and execution guarantees."
 tags:
@@ -48,15 +48,18 @@ public class CleanupJob {
 The task executes every five minutes. With a single application instance, this behaves as expected. However, when the
 application is deployed across three instances, all three independently execute the same task.
 
-```text
-                  Every 5 minutes
-                         |
-              +----------+----------+
-              |          |          |
-          Instance A Instance B Instance C
-              |          |          |
-           Cleanup    Cleanup    Cleanup
-```
+{{< mermaid >}}
+flowchart TD
+S["Every 5 minutes"]
+
+    S --> A["Instance A"]
+    S --> B["Instance B"]
+    S --> C["Instance C"]
+
+    A --> CA["Cleanup"]
+    B --> CB["Cleanup"]
+    C --> CC["Cleanup"]
+{{< /mermaid >}}
 
 Spring's scheduling mechanism has no built-in coordination between application instances. One option is to designate a
 specific instance to run scheduled tasks, but this introduces an operational dependency on that instance and complicates
