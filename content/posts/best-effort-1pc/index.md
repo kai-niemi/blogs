@@ -425,13 +425,17 @@ more reliable.
 
 ### XA and Two-Phase Commit
 
-XA-based two-phase commit provides a protocol for coordinating transactions across participating resources.
+Two-phase commit (2PC) resembles a wedding ceremony, with the transaction coordinator acting as the priest.
 
-A transaction manager first asks participants to prepare their transactions and then coordinates the final commit or
-rollback decision.
+In the prepare phase, each participant promises to commit if instructed, much like exchanging vows. Once everyone
+agrees, the coordinator records the decision and instructs them to commit. If anyone refuses, the transaction is rolled
+back.
 
-This provides stronger atomic commit guarantees than best-effort 1PC, but requires compatible transactional resources
-and introduces additional coordination, operational complexity, and potential blocking during failures.
+But what if the priest disappears before announcing the decision? Participants may be left waiting, unable to proceed
+independently. This illustrates the blocking problem of 2PC.
+
+XA defines a standardized interface through which a transaction manager coordinates compatible transactional resources,
+typically using 2PC to provide atomic commit guarantees.
 
 Not every database, broker, or external service supports XA. In particular, ordinary HTTP API calls cannot generally
 participate in such a transaction.
