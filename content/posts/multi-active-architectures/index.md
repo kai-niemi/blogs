@@ -10,6 +10,8 @@ tags:
   - high-availability
   - disaster-recovery
   - cockroachdb
+aliases:
+  - /multi-active-systems/
 cover:
     image: "cover.webp"
     caption: 'Photo by <a href="https://unsplash.com/@pemacallan?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Paul Macallan</a> on <a href="https://unsplash.com/photos/orange-fruit-on-gray-concrete-pavement-yo8jVsFH5Co?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>'

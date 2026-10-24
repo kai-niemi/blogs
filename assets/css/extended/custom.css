@@ -78,3 +78,37 @@ body:has(.cloudneutral-hero) {
 .post-content img {
     border-radius: 6px;
 }
+
+.not-found-container {
+    max-width: 640px;
+    margin: 80px auto;
+    text-align: center;
+}
+
+.not-found-container h1 {
+    font-size: 6rem;
+    font-weight: 700;
+}
+
+.not-found-container h2 {
+    font-size: 1.8rem;
+    margin: 16px 0 24px;
+}
+
+.not-found-container p {
+    color: var(--secondary);
+    margin: 16px 0;
+}
+
+.not-found-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-top: 32px;
+}
+
+.not-found-actions a {
+    color: var(--primary);
+    text-decoration: underline;
+}

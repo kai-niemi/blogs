@@ -15,12 +15,13 @@ categories:
   - Software Architecture
 showToc: true
 TocOpen: false
+aliases:
+  - /designing-idempotent-rest-apis/  
 cover:
   image: "cover.webp"
   caption: 'Photo by <a href="https://unsplash.com/@growtika?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Growtika</a> on <a href="https://unsplash.com/photos/diagram-k5AxNUn4c5o?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>'
   relative: true
   hiddenInList: true
-
 ---
 
 What happens when a client submits a payment or funds transfer, the server successfully processes it, but the response

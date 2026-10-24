@@ -1,0 +1,20 @@
+{{- define "main" }}
+
+<div class="not-found-container">
+    <h1>404</h1>
+    <h2>Article Not Found</h2>
+
+    <p>
+        The article you're looking for may have moved, been retired, or is no longer available.
+    </p>
+
+    <p>
+        This blog has moved to a new publishing platform, and not every article from the previous site has been migrated.
+    </p>
+
+    <div class="not-found-actions">
+        <a href="{{ "" | absLangURL }}">Back to Home</a>
+    </div>
+</div>
+
+{{- end }}{{/* end main */ -}}

@@ -14,7 +14,8 @@ tags:
 categories:
   - Software Engineering
 ShowToc: true
-
+aliases:
+  - /shortest-path-search-algorithms/
 cover:
   image: "cover.webp"
   alt: "Overhead view of people navigating a large wooden maze"
