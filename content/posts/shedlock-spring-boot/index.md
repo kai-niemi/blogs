@@ -16,7 +16,7 @@ categories:
   - Software Engineering
 cover:
   image: "cover.webp"
-  caption: 'Photo by <a href="https://unsplash.com/@parsoakhorsand?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Parsoa Khorsand</a> on <a href="https://unsplash.com/photos/padlock-on-black-metal-fence-Dd6n63H9szw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>'
+  caption: 'Photo by [Parsoa Khorsand](https://unsplash.com/@parsoakhorsand?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/padlock-on-black-metal-fence-Dd6n63H9szw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)'
   relative: true
   hiddenInList: true
 ---

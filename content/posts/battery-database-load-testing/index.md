@@ -17,7 +17,7 @@ categories:
 cover:
   image: "cover.webp"
   alt: "Industrial control panel with pressure and temperature gauges"
-  caption: 'Photo by <a href="https://unsplash.com/photos/a-bunch-of-clocks-that-are-on-a-pole-E2zPzEzIiQ8" target="_blank" rel="noopener noreferrer">Chris J. Walker</a> on Unsplash'
+  caption: 'Photo by [Chris J. Walker](https://unsplash.com/photos/a-bunch-of-clocks-that-are-on-a-pole-E2zPzEzIiQ8) on Unsplash'
   relative: true
   hiddenInList: true
 ---

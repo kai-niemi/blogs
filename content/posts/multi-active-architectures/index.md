@@ -16,7 +16,7 @@ categories:
   - Distributed Systems  
 cover:
     image: "cover.webp"
-    caption: 'Photo by <a href="https://unsplash.com/@pemacallan?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Paul Macallan</a> on <a href="https://unsplash.com/photos/orange-fruit-on-gray-concrete-pavement-yo8jVsFH5Co?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>'
+    caption: 'Photo by [Paul Macallan](https://unsplash.com/@pemacallan?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/orange-fruit-on-gray-concrete-pavement-yo8jVsFH5Co?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)'
     relative: true
     hiddenInList: true
 ---

@@ -19,7 +19,7 @@ aliases:
 cover:
   image: "cover.webp"
   alt: "Overhead view of people navigating a large wooden maze"
-  caption: 'Photo by <a href="https://unsplash.com/@syinq" target="_blank" rel="noopener noreferrer">Susan Q Yin</a> on <a href="https://unsplash.com/photos/people-sitting-on-white-concrete-stairs-Ctaj_HCqW84" target="_blank" rel="noopener noreferrer">Unsplash</a>'
+  caption: 'Photo by [Susan Q Yin](https://unsplash.com/@syinq) on [Unsplash](https://unsplash.com/photos/people-sitting-on-white-concrete-stairs-Ctaj_HCqW84)'
   relative: true
   hiddenInList: true
 ---
