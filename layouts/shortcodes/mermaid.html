@@ -1,15 +1,15 @@
-<pre class="mermaid">
-{{ .Inner | safeHTML }}
-</pre>
+<div class="mermaid">
+    {{ .Inner | safeHTML }}
+</div>
 
-{{ if not (.Page.Scratch.Get "mermaid-loaded") }}
-{{ .Page.Scratch.Set "mermaid-loaded" true }}
-
+{{ if not (.Page.Scratch.Get "mermaidLoaded") }}
+{{ .Page.Scratch.Set "mermaidLoaded" true }}
 <script type="module">
-    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
     mermaid.initialize({
         startOnLoad: true,
-        theme: 'neutral'
+        theme: "neutral"
     });
 </script>
 {{ end }}

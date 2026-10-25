@@ -11,6 +11,8 @@ tags:
   - java
   - messaging
   - idempotency
+categories:
+  - Distributed Systems  
 cover:
   image: "cover.webp"
   caption: 'Photo by <a href="https://unsplash.com/@procopiopi?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Omar:. Lopez-Rincon</a> on <a href="https://unsplash.com/photos/molecular-structures-are-seen-against-an-orange-backdrop-XkPNEqAhlaI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>'

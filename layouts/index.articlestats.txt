@@ -1,0 +1,3 @@
+{{- range where site.RegularPages "Section" "posts" }}
+{{ printf "%s\t%d\t%d\n" .Title .WordCount .ReadingTime }}
+{{- end }}

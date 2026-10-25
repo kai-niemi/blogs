@@ -11,7 +11,9 @@ tags:
   - scheduling
   - shedlock
 aliases:
-  - /cluster-singletons-using-shedlock/  
+  - /cluster-singletons-using-shedlock/
+categories:
+  - Software Engineering
 cover:
   image: "cover.webp"
   caption: 'Photo by <a href="https://unsplash.com/@parsoakhorsand?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Parsoa Khorsand</a> on <a href="https://unsplash.com/photos/padlock-on-black-metal-fence-Dd6n63H9szw?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>'

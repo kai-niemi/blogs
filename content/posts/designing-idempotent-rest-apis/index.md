@@ -12,7 +12,7 @@ tags:
   - Idempotency
   - Distributed Systems
 categories:
-  - Software Architecture
+  - Software Engineering
 showToc: true
 TocOpen: false
 aliases:

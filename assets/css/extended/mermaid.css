@@ -1,0 +1,12 @@
+.mermaid {
+    background: transparent !important;
+    color: #24292f;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+.mermaid svg {
+    max-width: 100%;
+    height: auto;
+    background: transparent !important;
+}

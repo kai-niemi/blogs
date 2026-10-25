@@ -14,7 +14,6 @@ tags:
   - Java
 categories:
   - Databases
-
 cover:
   image: "cover.webp"
   alt: "Industrial control panel with pressure and temperature gauges"
