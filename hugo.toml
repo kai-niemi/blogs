@@ -5,6 +5,9 @@ theme = "PaperMod"
 
 enableRobotsTXT = true
 
+[outputs]
+home = ["HTML", "RSS", "JSON"]
+
 [permalinks]
 posts = "/:slug/"
 
@@ -39,6 +42,12 @@ guessSyntax = false
 lineNos = false
 noClasses = false
 style = "monokai"
+
+[[menu.main]]
+identifier = "search"
+name = "Search"
+url = "/search/"
+weight = 20
 
 [[menu.main]]
 identifier = "about"

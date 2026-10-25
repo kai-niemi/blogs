@@ -37,3 +37,9 @@ Mostly it's about trade-offs: what a design costs, what it buys, and what breaks
 
 The views and opinions expressed on this blog are my own and do not necessarily reflect those
 of my current or former employers or any other organizations I'm affiliated with.
+
+## Privacy & Analytics
+
+CloudNeutral uses Cloudflare Web Analytics to collect anonymous, aggregated website statistics. The service does not use
+cookies or track visitors across websites. The site is hosted on GitHub Pages, which may process technical information
+necessary to deliver its content.
