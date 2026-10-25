@@ -49,7 +49,7 @@ Consider a service that transfers money between accounts:
 @Service
 @RequiredArgsConstructor
 public class TransferService {
-
+    
     private final AccountRepository accounts;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -656,7 +656,12 @@ public class TransferRetryService {
             DeadlockLoserDataAccessException.class
         },
         maxAttempts = 3,
-        backoff = @Backoff(delay = 100, multiplier = 2)
+        backoff = @Backoff(
+                delay = 100,
+                multiplier = 2,
+                maxDelay = 2000,
+                random = true
+        )
     )
     public void transfer(TransferCommand command) {
         transfers.execute(command);
@@ -687,7 +692,15 @@ policies should be tested against the database errors the application encounters
 
 The example also assumes that the transaction does not perform irreversible external side effects.
 
-A bounded retry policy with backoff is generally preferable to unlimited retries, particularly under sustained contention.
+Exponential backoff reduces retry frequency under contention, but deterministic delays can cause concurrent transactions
+to retry at approximately the same time. This may lead to repeated conflicts, particularly during periods of high
+concurrency.
+
+Adding jitter introduces randomness into retry delays, spreading competing transactions over time and reducing
+synchronized retry attempts. Spring Retry supports randomized exponential backoff through `@Backoff(random = true)`.
+
+Retries should remain bounded, with a maximum delay and a limited number of attempts. Jitter reduces the probability of
+repeated contention but does not eliminate the underlying conflicts.
 
 ### 5.4 Rollback Rules
 
