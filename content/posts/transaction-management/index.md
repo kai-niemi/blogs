@@ -287,12 +287,12 @@ Spring transaction managers normally handle these operations on behalf of the ap
 In a typical Spring Boot application, transaction management involves several components:
 
 - Spring's transaction manager determines transaction boundaries.
-- Hibernate or Spring Data JDBC performs persistence operations.
+- The JPA provider or Spring Data JDBC performs persistence operations.
 - HikariCP manages the underlying JDBC connection pool.
 - The database provides isolation, locking, and commit semantics.
 
-For JPA, Hibernate may delay acquiring a physical connection until it is needed. SQL execution can also be deferred
-until a flush occurs.
+With JPA, the persistence provider may defer acquiring a physical database connection until it is needed. SQL execution
+may also be deferred until the persistence context is flushed.
 
 Consequently, the beginning of a Spring transaction does not necessarily correspond to an immediate SQL `BEGIN`
 statement.
@@ -300,7 +300,7 @@ statement.
 The exact behavior depends on the persistence provider, transaction manager, connection handling mode, and connection
 pool configuration.
 
-For Hibernate configurations that disable auto-commit at the pool level, the following settings may be relevant:
+When using Hibernate with a connection pool configured to disable auto-commit, the following settings may be relevant:
 
 ```yaml
 spring:
@@ -416,8 +416,7 @@ Several approaches can prevent it.
 ```sql
 UPDATE accounts
 SET balance = balance - 20
-WHERE id = 1
-  AND balance >= 20;
+WHERE id = 1 AND balance >= 20;
 ```
 
 The application must check the affected row count to determine whether the operation succeeded.
@@ -425,10 +424,7 @@ The application must check the affected row count to determine whether the opera
 **Pessimistic locking** explicitly locks a row before modifying it:
 
 ```sql
-SELECT balance
-FROM accounts
-WHERE id = 1
-FOR UPDATE;
+SELECT balance FROM accounts WHERE id = 1 FOR UPDATE;
 ```
 
 Spring Data JPA supports pessimistic locking through `@Lock`:
@@ -455,8 +451,14 @@ public class Account {
 }
 ```
 
-Hibernate checks the version when updating the entity. If another transaction has already changed the row, the update
-fails rather than silently overwriting the newer value.
+The JPA provider checks the entity's version when updating it. If another transaction has modified the entity in the
+meantime, the update fails with an optimistic locking exception.
+
+```sql
+UPDATE accounts
+SET balance = ?, version = version + 1
+WHERE id = ? AND version = ?;
+```
 
 These mechanisms have different performance and contention characteristics. The appropriate choice depends on the access
 pattern, expected conflicts, and business invariants.
@@ -481,7 +483,8 @@ public AccountSummary getAccount(Long id) {
 
 The meaning of `readOnly = true` depends on the transaction manager and persistence provider.
 
-With Hibernate, Spring can use read-only hints to reduce unnecessary dirty checking and flushing.
+With Hibernate as the JPA provider, Spring can optimize read-only transactions by adjusting the flush mode and disabling
+dirty checking for loaded entities.
 
 This may improve performance for read-heavy workloads involving managed entities.
 
@@ -494,9 +497,7 @@ PostgreSQL provides database-enforced read-only transactions:
 ```sql
 BEGIN READ ONLY;
 
-SELECT *
-FROM accounts
-WHERE id = 1;
+SELECT * FROM accounts WHERE id = 1;
 
 COMMIT;
 ```
