@@ -18,7 +18,7 @@ cover:
 # Introduction
 
 This article is the second in a series about data access with Spring Data.
-The [previous article](https://blog.cloudneutral.se/posts/transaction-management/) covered transaction boundaries,
+The [previous article](https://blog.cloudneutral.se/transaction-management/) covered transaction boundaries,
 isolation, locking, and handling transaction failures.
 
 This time, we'll focus on how to structure write operations to reduce contention, avoid unnecessary database round
