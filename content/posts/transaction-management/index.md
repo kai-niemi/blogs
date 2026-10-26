@@ -333,22 +333,29 @@ Isolation determines how concurrent transactions interact and which intermediate
 
 The SQL standard defines four isolation levels:
 
-| Isolation level | General behavior |
-|---|---|
-| Read Uncommitted | Permits the weakest isolation |
-| Read Committed | Prevents dirty reads |
-| Repeatable Read | Provides stronger consistency across repeated reads |
-| Serializable | Requires results equivalent to some serial execution |
+| Isolation level  | General behavior                                     |
+|------------------|------------------------------------------------------|
+| Read Uncommitted | Permits the weakest isolation                        |
+| Read Committed   | Prevents dirty reads                                 |
+| Repeatable Read  | Provides stronger consistency across repeated reads  |
+| Serializable     | Requires results equivalent to some serial execution |
 
 Database implementations differ in how they provide these guarantees.
 
-PostgreSQL maps `READ UNCOMMITTED` to `READ COMMITTED`, since it does not permit dirty reads.
+PostgreSQL maps `READ UNCOMMITTED` to `READ COMMITTED` because it does not permit dirty reads. CockroachDB follows the
+same convention. Oracle supports neither `READ UNCOMMITTED` nor `REPEATABLE READ`, while MySQL InnoDB supports all four
+standard isolation levels, including dirty reads under `READ UNCOMMITTED`.
 
-Its `REPEATABLE READ` implementation uses snapshot isolation, preventing several anomalies beyond the SQL standard's
-minimum requirements. However, it does not prevent every serialization anomaly.
+The SQL standard's isolation levels do not capture every possible concurrency anomaly. For a more detailed examination
+of their limitations, see [A Critique of ANSI SQL Isolation Levels](https://blog.acolyer.org/2016/02/24/a-critique-of-ansi-sql-isolation-levels/),
+a review of the influential 1995 paper by Berenson et al.
 
-`SERIALIZABLE` provides the strongest isolation guarantee, but applications must be prepared to retry transactions that
-cannot be serialized.
+`SERIALIZABLE` is intended to provide the strongest isolation guarantee, but its implementation and guarantees vary
+between databases. In PostgreSQL, concurrent transactions may encounter serialization failures and require retries.
+These failures are a consequence of enforcing serializability, not a violation of it.
+
+The key takeaway is to understand the actual isolation guarantees provided by your database and whether they are
+sufficient to protect your application's invariants. Isolation-level names alone do not tell the whole story.
 
 Spring exposes isolation settings through `@Transactional`:
 
@@ -769,5 +776,6 @@ requires additional application-level design.
 - [PostgreSQL: Transaction Isolation](https://www.postgresql.org/docs/current/transaction-iso.html)
 - [PostgreSQL: Explicit Locking](https://www.postgresql.org/docs/current/explicit-locking.html)
 - [PostgreSQL: Error Codes](https://www.postgresql.org/docs/current/errcodes-appendix.html)
+- [A Critique of ANSI SQL Isolation Levels](https://blog.acolyer.org/2016/02/24/a-critique-of-ansi-sql-isolation-levels/)
 
 Part of the [Data Access](/series/data-access/) series.
