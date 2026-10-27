@@ -13,7 +13,7 @@
                     rgba(0, 0, 0, 0.25),
                     rgba(0, 0, 0, 0.55)
             ),
-            url("/images/cover.jpg");
+            url("/images/cover.webp");
 
     background-size: cover;
     background-position: center;

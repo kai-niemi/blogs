@@ -38,7 +38,7 @@ params:
   ShowBreadCrumbs: true
   ShowPostNavLinks: true
   images:
-    - "images/cover.jpg"
+    - "images/cover.webp"
 
   homeInfoParams:
     Title: "CloudNeutral"
@@ -48,7 +48,7 @@ params:
     enabled: false
     title: "CloudNeutral"
     subtitle: "Distributed Systems · Databases · Software Architecture"
-    imageUrl: "/images/cover.jpg"
+    imageUrl: "/images/cover.webp"
     imageWidth: 600
     imageHeight: 300
 
