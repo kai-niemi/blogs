@@ -1,12 +1,13 @@
 ---
 title: "Write Performance with Spring Data"
-weight: 4
-date: 2026-10-27
+series_weight: 4
+date: 2022-07-24
+lastmod: 2026-10-27
 draft: false
 series:
-- data-access
+  - data-access
 categories:
-- Databases
+  - Databases
 description: "JDBC batching, identifier generation, persistence context management and bulk inserts with Spring Data JPA and PostgreSQL."
 tags: ["Spring Data", "PostgreSQL", "JPA", "Hibernate", "SQL", "Performance"]
 cover:
@@ -16,9 +17,9 @@ cover:
   hiddenInList: true
 ---
 
-# Introduction
-
 This article is the fourth in a series about data access with Spring Data.
+
+<!--more-->
 
 {{< series-nav >}}
 

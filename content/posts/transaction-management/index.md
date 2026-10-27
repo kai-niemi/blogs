@@ -1,9 +1,9 @@
 ---
 title: "Transaction Management with Spring Data"
-weight: 1
-author: "Kai Niemi"
+series_weight: 1
 slug: "transaction-management"
-date: 2026-10-25
+lastmod: 2026-10-25
+date: 2022-07-24
 draft: false
 series:
   - data-access
@@ -22,9 +22,9 @@ cover:
   hiddenInList: true
 ---
 
-# Introduction
-
 This article is the first in a series about data access with Spring Data.
+
+<!--more-->
 
 {{< series-nav >}}
 

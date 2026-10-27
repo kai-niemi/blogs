@@ -28,6 +28,7 @@ permalinks:
   posts: "/:slug/"
 
 params:
+  series_weight: 3
   author: "Kai Niemi"
   description: "Articles on distributed systems, databases and software engineering"
   hideSummary: false
@@ -37,6 +38,7 @@ params:
   ShowCodeCopyButtons: true
   ShowBreadCrumbs: true
   ShowPostNavLinks: true
+  showPostContent: false
   images:
     - "images/cover.webp"
 

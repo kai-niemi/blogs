@@ -1,7 +1,8 @@
 ---
 title: "Read Patterns with Spring Data"
-weight: 3
-date: 2026-10-27
+series_weight: 3
+lastmod: 2026-10-27
+date: 2022-07-24
 draft: false
 series:
   - data-access
@@ -16,9 +17,9 @@ cover:
   hiddenInList: true
 ---
 
-# Introduction
-
 This article is the third in a series about data access with Spring Data.
+
+<!--more-->
 
 {{< series-nav >}}
 

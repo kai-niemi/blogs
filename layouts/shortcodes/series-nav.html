@@ -3,7 +3,7 @@
 
 {{- with $series -}}
   {{- $term := index . 0 -}}
-  {{- $pages := $term.Pages.ByWeight -}}
+  {{- $pages := sort $term.Pages "Params.series_weight" "asc" -}}
 
   <nav class="series-nav" aria-label="Article series">
     <div class="series-nav-title">

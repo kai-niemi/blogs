@@ -1,6 +1,5 @@
 ---
 title: "Battery: A Workload-Driven Database Load Testing Tool"
-author: "Kai Niemi"
 date: 2026-10-10
 draft: false
 slug: "battery-database-load-testing"

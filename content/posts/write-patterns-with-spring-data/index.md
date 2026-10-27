@@ -1,7 +1,8 @@
 ---
 title: "Write Patterns with Spring Data"
-weight: 2
-date: 2026-10-26
+series_weight: 2
+date: 2022-07-24
+lastmod: 2026-10-26
 draft: false
 series:
   - data-access
@@ -16,9 +17,9 @@ cover:
   hiddenInList: true
 ---
 
-# Introduction
-
 This article is the second in a series about data access with Spring Data.
+
+<!--more-->
 
 {{< series-nav >}}
 
