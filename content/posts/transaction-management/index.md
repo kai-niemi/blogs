@@ -1,5 +1,6 @@
 ---
 title: "Transaction Management with Spring Data"
+weight: 1
 author: "Kai Niemi"
 slug: "transaction-management"
 date: 2026-10-25
@@ -20,6 +21,12 @@ cover:
   relative: true
   hiddenInList: true
 ---
+
+# Introduction
+
+This article is the first in a series about data access with Spring Data.
+
+{{< series-nav >}}
 
 Transactions are fundamental to reliable data access. They group database operations into a unit of work that either
 commits or rolls back, preserving consistency when applications encounter concurrent requests, database errors, or

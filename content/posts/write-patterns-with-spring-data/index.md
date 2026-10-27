@@ -1,5 +1,6 @@
 ---
 title: "Write Patterns with Spring Data"
+weight: 2
 date: 2026-10-26
 draft: false
 series:
@@ -18,8 +19,8 @@ cover:
 # Introduction
 
 This article is the second in a series about data access with Spring Data.
-The [previous article](https://blog.cloudneutral.se/transaction-management/) covered transaction boundaries,
-isolation, locking, and handling transaction failures.
+
+{{< series-nav >}}
 
 This time, we'll focus on how to structure write operations to reduce contention, avoid unnecessary database round
 trips, and preserve application invariants.

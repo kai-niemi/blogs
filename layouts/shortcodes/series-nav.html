@@ -1,0 +1,25 @@
+{{- $current := .Page -}}
+{{- $series := $current.GetTerms "series" -}}
+
+{{- with $series -}}
+  {{- $term := index . 0 -}}
+  {{- $pages := $term.Pages.ByWeight -}}
+
+  <nav class="series-nav" aria-label="Article series">
+    <div class="series-nav-title">
+      Data Access with Spring Data
+    </div>
+
+    <ol>
+      {{- range $pages }}
+        <li>
+          {{- if eq .RelPermalink $current.RelPermalink }}
+            <strong aria-current="page">{{ .Title }}</strong>
+          {{- else }}
+            <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+          {{- end }}
+        </li>
+      {{- end }}
+    </ol>
+  </nav>
+{{- end }}
