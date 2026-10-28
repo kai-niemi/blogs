@@ -3,7 +3,7 @@ title: "Designing Idempotent REST APIs: Stateless Preconditions and Idempotency 
 description: "Explore two approaches to making REST API operations safer to retry: stateless resource-state preconditions and idempotency keys. Learn their guarantees, trade-offs, and concurrency considerations."
 summary: "How do you safely retry a POST request when the outcome is unknown? A comparison of stateless preconditions and idempotency keys, using funds transfers as an example."
 date: 2022-10-19
-lastmod: 2026-10-24
+lastmod: 2026-10-28
 draft: false
 tags:
   - REST
@@ -100,7 +100,6 @@ This distinction becomes particularly important when implementing idempotent POS
 ## Why Idempotency Matters
 
 Distributed systems communicate over networks, and networks are [unreliable](https://en.wikipedia.org/wiki/Fallacies_of_distributed_computing).
-
 A client can send a request without knowing whether the server received it, processed it, or successfully committed its changes.
 
 Consider a funds transfer between two accounts:
@@ -125,14 +124,13 @@ participant S as Server
 {{< /mermaid >}}
 
 The transfer completed successfully, but the response was lost.
-
 The client now faces an ambiguous outcome.
 
-Did the server fail before processing the request? Did the transaction commit? Was only the response lost?
+- Did the server fail before processing the request? 
+- Did the transaction commit? 
+- Was only the response lost?
 
-A timeout cannot answer these questions.
-
-This is a [fundamental](https://en.wikipedia.org/wiki/Two_Generals%27_Problem) problem in distributed systems: 
+A timeout cannot answer these questions, and this is a [fundamental](https://en.wikipedia.org/wiki/Two_Generals%27_Problem) problem in distributed systems: 
 **the absence of a response does not imply the absence of an effect**.
 
 The client might retry:
@@ -176,7 +174,6 @@ The operation must satisfy several invariants:
 - Retrying the same logical transfer must not create additional transfers.
 
 The first three requirements concern the correctness of the transfer itself.
-
 The fourth concerns **request idempotency**.
 
 We'll examine two approaches to addressing it.
@@ -248,9 +245,7 @@ Content-Type: application/json
 ```
 
 The token represents the observed versions of both accounts.
-
 It is not a record of an operation, nor does it prove that a transfer has previously occurred.
-
 Because the server can recompute the token from current resource versions, it does not need to store the token itself.
 
 The token is a concurrency-control mechanism, not an authorization credential. A deterministic hash does not prevent
@@ -274,7 +269,6 @@ Content-Type: application/json
 ```
 
 `Transfer-Precondition` is an illustrative, application-defined header, not a standardized HTTP conditional header.
-
 The server validates the token against the current account versions before executing the transfer.
 
 Conceptually:
@@ -306,15 +300,14 @@ RETURN 201 Created
 The important requirement is that **precondition validation and the transfer execute atomically**.
 
 Otherwise, two concurrent requests could both validate the same token before either updates the accounts.
-
 The transaction must ensure that only one conflicting operation can commit against a particular set of versions.
 
-Databases providing serializable transaction isolation, such as CockroachDB, are well suited to this pattern.
-Serializable isolation ensures that concurrent transactions produce results equivalent to some serial execution order.
+Databases providing serializable transaction isolation, such as PostgreSQL and CockroachDB, are well suited to this pattern.
+Serializable isolation ensures that concurrent transactions produce results equivalent to **some serial** execution order.
 Two conflicting transactions cannot both commit based on the same stale resource versions when validation and
 modification occur within the transaction.
 
-In CockroachDB, contention may cause serialization failures that require retrying the transaction. The precondition must
+Contention may cause serialization failures that require retrying the transaction. The precondition must
 be re-evaluated on each attempt using the original client-supplied token, ensuring that a retry cannot silently proceed
 against resource state that has since changed.
 
@@ -356,10 +349,7 @@ The server rejects the request:
 HTTP/1.1 412 Precondition Failed
 ```
 
-No additional transfer is performed.
-
-However, this response does not prove that the original transfer succeeded.
-
+No additional transfer is performed. However, this response does not prove that the original transfer succeeded.
 Another operation could have modified either account before the first transfer was executed.
 
 **A failed precondition means the relevant resource state has changed, not that a particular request was previously processed.**
@@ -421,11 +411,9 @@ However, there are important limitations:
 - The server cannot replay the original response without separately recording the operation's outcome.
 
 There is also an important distinction between **preventing a duplicate effect** and **making an operation idempotent**.
-
 A state-based precondition can prevent a repeated transfer from executing after the first transfer changes the protected versions.
 
 However, the mechanism is fundamentally conditional execution, not recognition of a previously submitted logical operation.
-
 For clients that need to recover the outcome of a request after a timeout, this limitation matters.
 
 ## Approach 2: Idempotency Keys
@@ -447,7 +435,6 @@ Content-Type: application/json
 ```
 
 The server associates the key with the operation and its outcome.
-
 If the same request is submitted again using the same key, the server recognizes it as a retry rather than a new transfer.
 
 Unlike stateless preconditions, idempotency keys identify **the operation itself**, not the current state of the affected resources.
@@ -469,7 +456,6 @@ Expires at
 ```
 
 The request fingerprint represents the relevant parameters of the original operation.
-
 The key should also be scoped appropriately, for example to a particular client or tenant, so unrelated clients cannot
 accidentally share the same namespace.
 
@@ -495,8 +481,7 @@ IF key does not exist:
     Store key
 ```
 
-This is unsafe under concurrency.
-
+**This is unsafe under concurrency.**
 Two requests can both observe that the key is absent and proceed to execute the transfer.
 
 The server needs an atomic mechanism for claiming the key, typically backed by a database uniqueness constraint or
@@ -546,9 +531,7 @@ The critical requirement is that **the transfer and its completed idempotency re
 A database transaction can provide this guarantee when both the business operation and idempotency record reside in the
 same transactional database.
 
-The `IN_PROGRESS` state requires additional care.
-
-An implementation might register an in-progress operation before starting the business transaction, allowing concurrent
+The `IN_PROGRESS` state requires additional care. An implementation might register an in-progress operation before starting the business transaction, allowing concurrent
 requests to detect that execution is underway.
 
 If the server crashes, that registration must not permanently prevent retries. A lease, timeout, or recovery mechanism
@@ -625,7 +608,6 @@ should be documented and consistent.
 ### Key Scope and Retention
 
 Idempotency keys cannot necessarily be retained forever.
-
 A server might retain them for a configurable period, such as 24 hours, after which the records are eligible for deletion.
 
 This creates an important limitation:
@@ -650,13 +632,13 @@ temporary HTTP idempotency records.
 
 ### Idempotency Is Not Exactly-Once Execution
 
-Idempotency keys are sometimes described as providing *exactly-once semantics*.
+Idempotency keys are sometimes described as providing 
+*exactly-once semantics* by deduplication.
 
 That terminology deserves care.
-
 A request handler may execute multiple times because of client retries, server restarts, or database transaction retries.
 
-What matters is that the intended business effect commits no more than once for a particular logical operation.
+What matters is that the intended business effect commits **no more than once** for a particular logical operation.
 
 For example:
 
@@ -736,7 +718,6 @@ Content-Type: application/json
 ```
 
 The idempotency key identifies the logical transfer across retries.
-
 The precondition ensures that the initial execution occurs only against the expected resource state.
 
 A retry of an already completed operation can return its recorded result without re-evaluating the original precondition.
@@ -756,4 +737,5 @@ recorded outcomes. They provide stronger retry semantics at the cost of maintain
 Both mechanisms require correct transactional boundaries and concurrency control, and they can be combined when an
 operation needs both state validation and safe retries.
 
-The goal isn't to prevent retries. It's to make them safe and predictable.
+The goal isn't to prevent retries since that's not practically possible. 
+It's to make them safe and predictable.
