@@ -24,6 +24,9 @@ cover:
   hiddenInList: true
 ---
 
+*Substantially revised October–November 2026, including a hands-on idempotency key implementation using Java, 
+Spring Boot, and PostgreSQL.*
+
 What happens when a client submits a payment or funds transfer, the server successfully processes it, but the response
 is lost?
 
