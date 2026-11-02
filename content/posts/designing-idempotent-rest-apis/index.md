@@ -1,9 +1,9 @@
 ---
 title: "Designing Idempotent REST APIs: Stateless Preconditions and Idempotency Keys"
 description: "Explore two approaches to making REST API operations safer to retry: stateless resource-state preconditions and idempotency keys. Learn their guarantees, trade-offs, and concurrency considerations."
-summary: "How do you safely retry a POST request when the outcome is unknown? A comparison of stateless preconditions and idempotency keys, using funds transfers as an example."
+summary: "How do you safely retry a POST request when the outcome is unknown? Compare stateless preconditions and idempotency keys through funds transfers and order creation."
 date: 2022-10-19
-lastmod: 2026-10-28
+lastmod: 2026-11-02
 draft: false
 tags:
   - REST
@@ -43,8 +43,8 @@ In this article, we'll explore two approaches:
 2. **Idempotency keys**, where the server records a unique operation identifier to recognize and deduplicate repeated
    requests.
 
-We'll use a funds-transfer example to demonstrate both approaches, examine their trade-offs, and discuss the guarantees
-and limitations of each.
+We'll use a funds-transfer example to demonstrate both approaches, then examine a simpler idempotency-key implementation
+using order creation. We'll compare their guarantees, trade-offs, and concurrency considerations.
 
 ## HTTP Safety and Idempotency
 
@@ -183,9 +183,8 @@ We'll examine two approaches to addressing it.
 A stateless precondition allows the server to determine whether an operation may execute based on the current state of
 the affected resources, without storing a history of previous requests.
 
-The idea is similar to optimistic concurrency control.
-
-HTTP provides standardized conditional requests through headers such as `If-Match`, which compares an entity tag (ETag)
+The idea is similar to optimistic concurrency control. HTTP provides standardized conditional requests through headers
+such as `If-Match`, which compares an entity tag (ETag)
 against the selected representation of the target resource.
 
 For a transfer involving multiple accounts, however, we want to validate the combined state of several resources.
@@ -195,6 +194,10 @@ precondition header.
 
 Unlike `If-Match`, this header defines an application-specific precondition over multiple resources. The API uses `412
 Precondition Failed` to indicate that the supplied token no longer matches the current resource versions.
+
+Unlike idempotency keys, stateless preconditions do not identify individual operations. They prevent execution against
+unexpected resource state, which can protect against duplicate effects, but cannot establish whether a particular
+request has already succeeded.
 
 ### Generating a Resource-State Token
 
@@ -304,8 +307,8 @@ The transaction must ensure that only one conflicting operation can commit again
 
 Databases providing serializable transaction isolation, such as PostgreSQL and CockroachDB, are well suited to this pattern.
 Serializable isolation ensures that concurrent transactions produce results equivalent to **some serial** execution order.
-Two conflicting transactions cannot both commit based on the same stale resource versions when validation and
-modification occur within the transaction.
+This guarantee depends on every relevant state modification advancing the corresponding resource version. Versions must
+not be reused or reset in ways that could make an earlier token valid again.
 
 Contention may cause serialization failures that require retrying the transaction. The precondition must
 be re-evaluated on each attempt using the original client-supplied token, ensuring that a retry cannot silently proceed
@@ -441,7 +444,7 @@ Unlike stateless preconditions, idempotency keys identify **the operation itself
 
 ### Request Deduplication
 
-A typical idempotency record contains:
+An idempotency record that retains completed HTTP responses might contain:
 
 ```text
 Idempotency record
@@ -487,6 +490,9 @@ Two requests can both observe that the key is absent and proceed to execute the 
 The server needs an atomic mechanism for claiming the key, typically backed by a database uniqueness constraint or
 equivalent concurrency control.
 
+The following pseudocode assumes that atomic key acquisition resolves concurrent claims by waiting for the competing
+transaction or returning an explicit in-progress outcome. The exact behavior depends on the persistence strategy.
+
 Conceptually:
 
 ```text
@@ -498,6 +504,10 @@ FUNCTION submitTransfer(key, request):
 
     result = atomicallyClaimKey(key, fingerprint)
 
+    IF result == IN_PROGRESS:
+        ROLLBACK
+        RETURN documentedInProgressResponse
+    
     IF result == FINGERPRINT_MISMATCH:
         ROLLBACK
         RETURN 422 Unprocessable Content
@@ -552,7 +562,10 @@ In either case, the server must distinguish between:
 A failed attempt must not permanently consume an idempotency key unless the API deliberately records that failure as the
 operation's final outcome.
 
-### Replaying the Original Response
+### Implementation A: Storing and Replaying Responses
+
+One implementation strategy is to store the original HTTP response alongside the idempotency record. When the same
+request is retried, the server returns the recorded response without executing the operation again.
 
 Suppose the original request succeeds:
 
@@ -598,23 +611,151 @@ Content-Type: application/json
 
 No additional transfer is executed.
 
-This is the primary advantage of idempotency keys over resource-state preconditions: **the server can recognize a
-previously completed logical operation and return its outcome, even if the underlying resources have changed since
-then.**
+Unlike resource-state preconditions, idempotency keys allow the server to identify a previously completed operation and
+recover its outcome.
 
 An API could instead return `200 OK` with the existing result. Both behaviors are possible, but the response semantics
 should be documented and consistent.
 
+### Implementation B: Referencing the Created Resource
+
+Storing the original HTTP response is not always necessary.
+
+For operations that create persistent resources, the server can instead associate the idempotency key with the
+identifier of the created resource.
+
+This approach is illustrated by [Order System](https://github.com/kai-niemi/order-system), a Java and Spring Boot
+application demonstrating REST architectural principles.
+
+Consider creating an order:
+
+```http
+POST /api/orders
+Idempotency-Key: "8d27c0f1-7b24-4f9e-8d38-0e7b6d0d18a4"
+Content-Type: application/json
+
+{
+  "customerId": "550e8400-e29b-41d4-a716-446655440000",
+  "items": [
+    {
+      "productId": "550e8400-e29b-41d4-a716-446655440001",
+      "quantity": 2
+    }
+  ]
+}
+```
+
+The server computes a canonical fingerprint from the HTTP method, request path, and body. It then attempts to acquire
+the idempotency key within a database transaction. The fingerprint must cover all request inputs that affect the
+operation's semantics. For this endpoint, the method, path, and body are sufficient.
+
+A simplified idempotency record contains:
+
+```text
+Scope
+Key
+Request fingerprint
+Resource ID
+Created at
+Expires at
+```
+
+If the key is successfully acquired, the server creates the order using the resource identifier associated with the key.
+
+If the response is lost and the client retries using the same key and request body, the server retrieves the existing
+order rather than creating another.
+
+The important distinction is that the server does not retain the complete HTTP response.
+On the initial request, the application executes the business operation and builds the resource representation. On
+replay, it skips the business operation and invokes only the representation function using the previously stored
+resource identifier.
+
+#### Atomic Key Acquisition
+
+The Order System implementation uses PostgreSQL's `INSERT ... ON CONFLICT` to acquire idempotency keys atomically.
+
+A unique constraint on `(scope, idempotency_key)` combined with the conditional `INSERT ... ON CONFLICT` statement,
+ensures that competing requests cannot independently acquire the same live key.
+
+The acquisition operation distinguishes three cases:
+
+- **New key:** A record is inserted with a generated resource identifier.
+- **Existing, unexpired key:** Acquisition returns no identifier. The server retrieves the existing record and verifies the request fingerprint.
+- **Existing, expired key:** The record is replaced with a new resource identifier and expiration time.
+
+The relevant SQL is:
+
+```sql
+INSERT INTO idempotency_record (...)
+VALUES (...)
+ON CONFLICT (scope, idempotency_key) DO UPDATE
+SET fingerprint = excluded.fingerprint,
+    resource_id = excluded.resource_id,
+    created_at  = now(),
+    expires_at  = excluded.expires_at
+WHERE idempotency_record.expires_at < now()
+RETURNING resource_id
+```
+
+The returned resource identifier determines whether the business operation should execute.
+
+The application separates the business operation from representation generation:
+
+```java
+public <T> IdempotencyResult<T> execute(
+        IdempotencyRequest request,
+        Consumer<UUID> operation,
+        Function<UUID, T> representation)
+```
+
+When acquisition succeeds, the application executes the business operation using the allocated resource identifier.
+
+When acquisition fails because a live record already exists, the application compares request fingerprints. A mismatch
+is rejected. Otherwise, the representation of the existing resource is retrieved without executing the business
+operation again.
+
+Both key acquisition and order creation execute within the same database transaction.
+
+This ensures that a committed order creation has a corresponding idempotency record. If order creation fails, the
+transaction rolls back the key acquisition as well.
+
+Concurrent requests cannot independently claim the same live key, although database contention may require transaction
+retries.
+
+The implementation supports both `READ COMMITTED` and `SERIALIZABLE` transaction isolation. Under `READ COMMITTED`,
+competing requests are coordinated through PostgreSQL's unique constraint and atomic `INSERT ... ON CONFLICT` operation.
+A waiting request can observe the committed idempotency record and retrieve the existing order.
+
+Under `SERIALIZABLE`, a competing request may instead encounter a serialization failure (`SQLSTATE 40001`). The
+application retries the entire transaction, allowing the retry to observe the committed record and return the existing
+order without executing the business operation again.
+
+#### Response Semantics
+
+Unlike storing the original response, retrieving the existing order may return its current representation.
+
+For example, if the order was subsequently cancelled, a retry could return the same order identifier with a cancelled
+status.
+
+The operation remains idempotent because no additional order is created.
+The API must also define what happens when the referenced resource has been deleted or is no longer accessible.
+
+This approach trades exact response replay for a smaller persistence model and a direct relationship between the
+idempotency key and the created resource.
+
 ### Key Scope and Retention
 
 Idempotency keys cannot necessarily be retained forever.
-A server might retain them for a configurable period, such as 24 hours, after which the records are eligible for deletion.
+A server might retain them for a configurable period, such as 24 hours, after which the records are eligible for
+deletion.
 
 This creates an important limitation:
 
 **The deduplication guarantee applies only while the idempotency record remains valid and available.**
 
 If a client retries after the retention window, the server may treat the request as a new operation.
+Reusing a key after its expiration is treated as a new operation and may create another order, even if the original
+order still exists.
 
 The API should therefore define:
 
@@ -625,7 +766,8 @@ The API should therefore define:
 - Whether completed responses are replayed.
 - Which operation outcomes are retained.
 
-The retention period should reflect realistic client retry behavior and the business consequences of duplicate execution.
+The retention period should reflect realistic client retry behavior and the business consequences of duplicate
+execution.
 
 For financial operations, an application may also require durable business-level uniqueness constraints independent of
 temporary HTTP idempotency records.
@@ -659,18 +801,31 @@ failure-handling mechanisms.
 
 Both stateless preconditions and idempotency keys can help prevent unintended duplicate effects, but they provide different guarantees.
 
-| Property | Stateless preconditions | Idempotency keys |
-|---|---|---|
-| Primary purpose | Optimistic concurrency control | Request deduplication |
-| Identifies | Resource state or version | Logical operation |
-| Requires initial request | Usually | No, if client generates the key |
-| Requires server-side operation history | No | Yes |
-| Protects against concurrent execution | With atomic precondition validation | With atomic key claiming |
-| Recognizes an earlier operation | No | Yes |
-| Can replay the original response | Not inherently | Yes, if retained |
-| Requires retention management | Not necessarily | Yes |
-| Typical retry outcome | `412 Precondition Failed` | Previously recorded result |
-| Main limitation | Cannot establish why state changed | Requires storage and lifecycle management |
+| Property                               | Stateless preconditions             | Idempotency keys                          |
+|----------------------------------------|-------------------------------------|-------------------------------------------|
+| Primary purpose                        | Optimistic concurrency control      | Request deduplication                     |
+| Identifies                             | Resource state or version           | Logical operation                         |
+| Requires initial request               | Usually                             | No, if client generates the key           |
+| Requires server-side operation history | No                                  | Yes                                       |
+| Protects against concurrent execution  | With atomic precondition validation | With atomic key claiming                  |
+| Recognizes an earlier operation        | No                                  | Yes                                       |
+| Can replay the original response       | Not inherently                      | Only if the response is retained          |
+| Requires retention management          | Not necessarily                     | Yes                                       |
+| Typical retry outcome                  | `412 Precondition Failed`           | Recorded result or existing resource      |
+| Main limitation                        | Cannot establish why state changed  | Requires storage and lifecycle management |
+
+### Idempotency-Key Implementation Trade-offs
+
+| Property                 | Stored response               | Resource reference         |
+|--------------------------|-------------------------------|----------------------------|
+| Stored result            | Original HTTP response        | Created resource ID        |
+| Retry behavior           | Replay recorded response      | Retrieve existing resource |
+| Response consistency     | Original response             | Potentially current state  |
+| Storage overhead         | Depends on response size      | Typically smaller          |
+| Resource deletion        | Response can remain available | Requires explicit handling |
+| Atomicity required       | Yes                           | Yes                        |
+| Request fingerprint      | Recommended                   | Recommended                |
+| Concurrent deduplication | Required                      | Required                   |
 
 ### When to Use Stateless Preconditions
 
@@ -732,10 +887,11 @@ Stateless preconditions protect operations against changes to relevant resource 
 concurrency control but cannot identify whether a particular request has already executed.
 
 Idempotency keys identify logical operations across retries, enabling request deduplication and recovery of previously
-recorded outcomes. They provide stronger retry semantics at the cost of maintaining server-side state.
+completed outcomes.
 
-Both mechanisms require correct transactional boundaries and concurrency control, and they can be combined when an
-operation needs both state validation and safe retries.
+The server can retain the original HTTP response or store a reference to the affected resource. Both approaches require
+atomic persistence and concurrency control, but they differ in their storage requirements and response semantics.
 
-The goal isn't to prevent retries since that's not practically possible. 
-It's to make them safe and predictable.
+These mechanisms can also be combined when an operation needs both state validation and safe retries.
+
+The goal isn't to prevent retries, since that's not practically possible. It's to make them safe and predictable.
