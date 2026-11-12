@@ -2,7 +2,7 @@
 title: "Transaction Management with Spring Data"
 series_weight: 1
 slug: "transaction-management"
-lastmod: 2026-10-25
+lastmod: 2026-11-12
 date: 2022-07-24
 draft: false
 series:
@@ -13,11 +13,11 @@ tags:
   - transactions
   - postgresql
 categories:
-  - Databases  
+  - Databases
 description: "Transaction management with Spring Boot and Spring Data, covering transaction boundaries, isolation, concurrency, and failure handling."
 cover:
   image: "cover.webp"
-  caption: 'Photo by [Jimmy  Chang](https://unsplash.com/@photohunter?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/low-angle-photography-of-building-at-daytime-hDOnQGPofuU?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)'
+  caption: 'Photo by [Jimmy Chang](https://unsplash.com/@photohunter?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/low-angle-photography-of-building-at-daytime-hDOnQGPofuU?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)'
   relative: true
   hiddenInList: true
 ---
@@ -28,27 +28,23 @@ This article is the first in a series about data access with Spring Data.
 
 {{< series-nav >}}
 
-Transactions are fundamental to reliable data access. They group database operations into a unit of work that either
-commits or rolls back, preserving consistency when applications encounter concurrent requests, database errors, or
-infrastructure failures.
+This article covers a selection of transaction management patterns, pitfalls, and implementation details when using
+Spring Boot with Spring Data JPA or JDBC. The topics include transaction boundaries, connection management, isolation
+and concurrency control, read-only transactions, and handling transaction failures.
 
-Spring Boot and Spring Data make transaction management relatively straightforward through declarative annotations and
-repository abstractions. However, the simplicity of `@Transactional` can obscure important details about transaction
-boundaries, database isolation, connection management, and failure handling.
+Each section addresses a separate concern, using PostgreSQL as the primary reference database. The examples examine how
+Spring's transaction abstractions interact with database behavior, particularly where transaction boundaries,
+concurrency, or failure handling are not immediately obvious.
 
-This article examines transaction management in Spring Boot applications using Spring Data JPA and Spring Data JDBC,
-with PostgreSQL as the reference database. The emphasis is on understanding what happens beneath the abstractions and
-how transaction design affects application correctness and performance.
+## Transaction Boundaries and Scope
 
-## 1. Keeping Transactions Short
-
-A database transaction holds resources for its entire lifetime. Depending on the operations performed, these may include
+A database transaction holds resources for its lifetime. Depending on the operations performed, these may include
 connections, locks, transaction metadata, and database versions required by concurrent readers.
 
 Long-running transactions increase contention and can reduce throughput, particularly in applications with many
 concurrent requests.
 
-### 1.1 Transaction Boundaries
+### Transaction Ownership and Propagation
 
 Consider a service that transfers money between accounts:
 
@@ -56,7 +52,7 @@ Consider a service that transfers money between accounts:
 @Service
 @RequiredArgsConstructor
 public class TransferService {
-    
+
     private final AccountRepository accounts;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -83,30 +79,92 @@ public class TransferService {
 Both account modifications participate in the same transaction. If either operation fails with an exception that
 triggers rollback, neither modification is committed.
 
-The service method provides a natural transaction boundary because it represents a complete business operation.
+The service method provides a transaction boundary around a complete database operation. Both updates commit or roll
+back together, but this example demonstrates atomicity, not concurrency correctness. Under PostgreSQL's default
+`READ COMMITTED` isolation, concurrent transfers can still produce lost updates if balances are read and overwritten
+without locking or version checks. The concurrency section covers ways to prevent this.
 
-Placing transactions at the service layer also makes their scope explicit. Individual repository operations should not
-determine the atomicity of a workflow involving multiple repositories.
+Spring's default `REQUIRED` propagation starts a transaction when none exists or participates in an existing one. This
+is convenient, but it also means transaction ownership depends on the calling context. A service method that starts its
+own transaction when called directly can silently become part of a larger transaction when called by another service.
 
-Spring's default `REQUIRED` propagation allows a method to either start a transaction or participate in an existing one.
-While convenient, this makes transaction ownership dependent on the calling context.
+For stateless services working against a single transactional database, one architectural convention is to distinguish
+transaction-owning application services from services that participate in an existing transaction. Transaction owners
+use `REQUIRES_NEW` to establish an independent transaction boundary. Participating control services use `MANDATORY` to
+require an existing transaction without creating one. Repositories perform persistence operations within the boundary
+established by the application service.
 
-One architectural convention is to use `REQUIRES_NEW` for application services that own transaction boundaries and
-`MANDATORY` for control services that must participate in an existing transaction. This distinguishes transaction
-ownership from participation and prevents control services from implicitly establishing their own transactions.
+This is an architectural convention, not a requirement of Spring. `REQUIRED` can also start a transaction. The reason
+for using `REQUIRES_NEW` here is to make transaction ownership independent of the caller rather than allowing a service
+to join another transaction implicitly.
 
-`REQUIRES_NEW` suspends any existing transaction and establishes an independent one. Transaction-owning services should
-therefore not be composed within other transactions unless independent commit semantics are intentional.
+Transaction-owning services should not invoke other transaction-owning services from within an active transaction.
+`REQUIRES_NEW` does not reject that composition: it suspends the existing transaction and starts another, which can
+commit independently and may require another database connection. Such calls violate the intended separation of
+responsibilities and require architectural checks beyond propagation settings to prevent.
 
-Spring Data JPA repository methods may already have transactional behavior. For example, inherited CRUD methods in
-`SimpleJpaRepository` are transactional, with read operations typically marked read-only.
+Custom meta-annotations can make the convention visible in application code. For example, `@TransactionBoundary` can
+identify a transaction-owning application service and map to `REQUIRES_NEW`, while `@TransactionMandatory` can identify
+a participating service and map to `MANDATORY`. They convey intended responsibilities but do not change Spring's runtime
+propagation behavior.
 
-Spring Data JDBC follows different repository transaction conventions, but the same principle applies: use a
-service-level transaction when several database operations must succeed or fail together.
+```java
+@Inherited
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Transactional(propagation = Propagation.REQUIRES_NEW)
+public @interface TransactionBoundary {
+    /**
+     * Indicates whether the transaction is read-only.
+     * Actual enforcement depends on the transaction manager.
+     */
+    @AliasFor(annotation = Transactional.class, attribute = "readOnly")
+    boolean readOnly() default false;
+}
+```
 
-### 1.2 Avoid External Calls Inside Transactions
+Participating services use a corresponding annotation:
 
-A common mistake is performing remote operations while holding a database transaction open:
+```java
+@Inherited
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Transactional(propagation = Propagation.MANDATORY)
+public @interface TransactionMandatory {
+}
+```
+
+Illustrated usage in the transfer example above:
+
+```java
+@TransactionBoundary
+public void transfer(
+        Long sourceId,
+        Long targetId,
+        BigDecimal amount) {
+    // Transfer implementation
+}
+```
+
+Then in some collaborating service:
+
+```java
+@TransactionMandatory
+public void updateBalance(...) {
+// Requires an existing transaction
+}
+```
+
+Spring Data JPA repository methods may already have transactional behavior. Inherited CRUD methods in
+`SimpleJpaRepository` are transactional, with read operations typically marked read-only. Spring Data JDBC has its own
+repository transaction configuration. Repository defaults therefore need attention if only designated application
+services should be allowed to create transactions.
+
+### External Calls and Transaction Scope
+
+Performing remote operations while holding a database transaction open can unnecessarily extend transaction duration:
 
 ```java
 @Transactional
@@ -128,7 +186,8 @@ This creates several problems:
 - External operations cannot be rolled back by the database.
 - Timeouts can leave the outcome of remote operations uncertain.
 
-A better design separates database transactions from external interactions:
+One way to shorten the database transaction is to perform the external operation before entering the transactional
+service:
 
 ```java
 public void processOrder(Order order) {
@@ -152,20 +211,22 @@ public class OrderTransactionService {
 }
 ```
 
-This reduces transaction duration, although it does not make the overall workflow atomic. If the external operation
-succeeds and the database transaction fails, reconciliation or compensation may still be necessary.
+This reduces transaction duration but changes the failure scenarios. If payment authorization succeeds and the database
+transaction fails, the application must handle an authorization without a corresponding order. Reversing the order of
+operations creates a different failure window. Neither arrangement makes the overall workflow atomic.
 
 For workflows requiring reliable coordination between database changes and message publication, the transactional outbox
 pattern is generally more appropriate.
 
-See [Best-Effort One-Phase Commit and the Dual-Write Problem](/posts/best-effort-1pc/) for a discussion of these tradeoffs.
+See [Best-Effort One-Phase Commit and the Dual-Write Problem](/posts/best-effort-one-phase-commit-and-the-dual-write-problem/)
+for a discussion of these tradeoffs.
 
-### 1.3 Spring Transaction Proxies
+### Spring Transaction Proxies
 
 Spring typically implements declarative transactions using AOP proxies.
 
-When a caller invokes a transactional method through the Spring proxy, the transaction interceptor starts or joins a
-transaction before invoking the target method.
+When a caller invokes a transactional method through the Spring proxy, the transaction interceptor establishes or joins
+a transaction before invoking the target method.
 
 The transaction interceptor commits when the method completes successfully or rolls back when an exception requires it.
 
@@ -178,18 +239,22 @@ sequenceDiagram
     participant D as Database
 
     C->>P: transfer()
-    P->>D: BEGIN
+    Note over P: Establish transaction
     P->>S: transfer()
     S->>R: findById(), save()
     R->>D: SQL statements
     D-->>R: Results
     R-->>S: Return
     S-->>P: Return
-    P->>D: COMMIT
+    Note over P,D: Commit transaction
     P-->>C: Return
 {{< /mermaid >}}
 
-An important consequence is that **self-invocation does not pass through the proxy**.
+The diagram represents the logical transaction lifecycle. Depending on the transaction manager and persistence provider,
+acquiring a physical database connection and starting the corresponding database transaction may be deferred until the
+connection is needed.
+
+An important consequence of proxy-based transaction management is that **self-invocation does not pass through the proxy**.
 
 ```java
 @Service
@@ -221,11 +286,9 @@ transactionTemplate.executeWithoutResult(status -> {
 
 This can be useful when transaction boundaries must be controlled independently of method boundaries.
 
-## 2. Explicit and Implicit Transactions
+## Transaction and Connection Management
 
-Understanding how transactions are started is important when working with JDBC, connection pools, and Spring Data abstractions.
-
-### 2.1 Explicit Transactions
+### Explicit SQL Transactions
 
 An explicit SQL transaction groups multiple statements:
 
@@ -243,7 +306,7 @@ WHERE id = 2;
 COMMIT;
 ```
 
-If an error occurs, the transaction can be rolled back:
+If an error occurs before committing, the transaction can be rolled back:
 
 ```sql
 ROLLBACK;
@@ -252,7 +315,7 @@ ROLLBACK;
 In PostgreSQL, a statement error generally leaves an explicit transaction in an aborted state. Subsequent statements
 fail until the transaction is rolled back, unless the application uses savepoints to recover.
 
-### 2.2 JDBC Auto-Commit
+### JDBC Auto-Commit
 
 JDBC connections default to auto-commit mode unless configured otherwise.
 
@@ -289,7 +352,7 @@ try {
 
 Spring transaction managers normally handle these operations on behalf of the application.
 
-### 2.3 Spring Data and Connection Management
+### Connection Acquisition with Spring Data
 
 In a typical Spring Boot application, transaction management involves several components:
 
@@ -301,8 +364,7 @@ In a typical Spring Boot application, transaction management involves several co
 With JPA, the persistence provider may defer acquiring a physical database connection until it is needed. SQL execution
 may also be deferred until the persistence context is flushed.
 
-Consequently, the beginning of a Spring transaction does not necessarily correspond to an immediate SQL `BEGIN`
-statement.
+Consequently, the beginning of a Spring transaction does not necessarily correspond to an immediate SQL `BEGIN` statement.
 
 The exact behavior depends on the persistence provider, transaction manager, connection handling mode, and connection
 pool configuration.
@@ -322,7 +384,9 @@ spring:
           provider_disables_autocommit: true
 ```
 
-The Hibernate property tells the provider that connections are already configured with auto-commit disabled.
+The Hibernate property tells the provider that connections are already configured with auto-commit disabled. With
+compatible connection handling, this can allow Hibernate to defer physical connection acquisition. It is not the same
+mechanism as wrapping a data source in `LazyConnectionDataSourceProxy`.
 
 **These settings must agree.** Setting `provider_disables_autocommit` to `true` without actually disabling auto-commit
 can cause incorrect transaction behavior.
@@ -330,28 +394,26 @@ can cause incorrect transaction behavior.
 This is a configuration choice rather than a universal optimization. It should be evaluated against the application's
 connection handling and transaction requirements.
 
-## 3. Transaction Isolation and Concurrency
-
-Transactions provide atomicity, but atomicity alone does not prevent concurrency anomalies.
+## Transaction Isolation and Concurrency
 
 Isolation determines how concurrent transactions interact and which intermediate or committed changes they can observe.
 
-### 3.1 Isolation Levels
+### Isolation Levels
 
 The SQL standard defines four isolation levels:
 
-| Isolation level  | General behavior                                     |
-|------------------|------------------------------------------------------|
-| Read Uncommitted | Permits the weakest isolation                        |
-| Read Committed   | Prevents dirty reads                                 |
-| Repeatable Read  | Provides stronger consistency across repeated reads  |
-| Serializable     | Requires results equivalent to some serial execution |
+| Isolation level | General behavior |
+|---|---|
+| Read Uncommitted | Permits the weakest isolation |
+| Read Committed | Prevents dirty reads |
+| Repeatable Read | Provides stronger consistency across repeated reads |
+| Serializable | Requires results equivalent to some serial execution |
 
 Database implementations differ in how they provide these guarantees.
 
-PostgreSQL maps `READ UNCOMMITTED` to `READ COMMITTED` because it does not permit dirty reads. CockroachDB follows the
-same convention. Oracle supports neither `READ UNCOMMITTED` nor `REPEATABLE READ`, while MySQL InnoDB supports all four
-standard isolation levels, including dirty reads under `READ UNCOMMITTED`.
+PostgreSQL maps READ UNCOMMITTED to READ COMMITTED because it does not permit dirty reads. Oracle supports neither READ
+UNCOMMITTED nor REPEATABLE READ, while MySQL InnoDB supports all four standard isolation levels, including dirty reads
+under READ UNCOMMITTED.
 
 The SQL standard's isolation levels do not capture every possible concurrency anomaly. For a more detailed examination
 of their limitations, see [A Critique of ANSI SQL Isolation Levels](https://blog.acolyer.org/2016/02/24/a-critique-of-ansi-sql-isolation-levels/),
@@ -360,9 +422,6 @@ a review of the influential 1995 paper by Berenson et al.
 `SERIALIZABLE` is intended to provide the strongest isolation guarantee, but its implementation and guarantees vary
 between databases. In PostgreSQL, concurrent transactions may encounter serialization failures and require retries.
 These failures are a consequence of enforcing serializability, not a violation of it.
-
-The key takeaway is to understand the actual isolation guarantees provided by your database and whether they are
-sufficient to protect your application's invariants. Isolation-level names alone do not tell the whole story.
 
 Spring exposes isolation settings through `@Transactional`:
 
@@ -382,7 +441,7 @@ public void transfer(
 The setting applies when Spring starts a new physical transaction. A method joining an existing transaction generally
 inherits that transaction's isolation level.
 
-### 3.2 Lost Updates
+### Lost Updates
 
 Consider two concurrent transactions updating the same account balance.
 
@@ -390,8 +449,8 @@ Both read an initial balance of 100.
 
 Transaction A subtracts 20, while transaction B subtracts 30.
 
-If each calculates a new balance in application code and writes it without concurrency protection, the final balance may
-reflect only one update.
+If each calculates a new balance in application code and writes it without concurrency protection, the final balance
+may reflect only one update.
 
 {{< mermaid >}}
 sequenceDiagram
@@ -470,9 +529,7 @@ WHERE id = ? AND version = ?;
 These mechanisms have different performance and contention characteristics. The appropriate choice depends on the access
 pattern, expected conflicts, and business invariants.
 
-A separate article in this series will examine concurrency control in greater detail.
-
-## 4. Read-Only Transactions
+## Read-Only Transactions
 
 Spring supports read-only transaction declarations:
 
@@ -502,7 +559,7 @@ A read-only transaction can therefore be a performance hint rather than a strict
 PostgreSQL provides database-enforced read-only transactions:
 
 ```sql
-BEGIN READ ONLY;
+BEGIN TRANSACTION READ ONLY;
 
 SELECT * FROM accounts WHERE id = 1;
 
@@ -519,19 +576,21 @@ This behavior should not be assumed for JPA transaction managers.
 For applications requiring strict protection against writes, database privileges and explicit database-level read-only
 enforcement provide stronger guarantees than application annotations alone.
 
-## 5. Handling Transaction Failures
+## Transaction Failures and Retries
 
 Transactions can fail for reasons unrelated to application validation.
 
-Common examples include serialization conflicts, deadlocks, constraint violations, timeouts, and lost database connections.
+Common examples include serialization conflicts, deadlocks, constraint violations, timeouts, and lost database
+connections.
 
 Correct failure handling requires distinguishing errors that can be retried from errors whose outcome is uncertain.
 
-### 5.1 Serialization Failures and Deadlocks
+### Serialization Failures and Deadlocks
 
 PostgreSQL reports serialization failures using SQLSTATE `40001`.
 
 These can occur under `SERIALIZABLE` isolation when concurrent transactions cannot be committed in a serializable order.
+PostgreSQL can also report `40001` under `REPEATABLE READ`, including for concurrent update conflicts.
 
 Deadlocks are reported using SQLSTATE `40P01`.
 
@@ -539,9 +598,9 @@ For example:
 
 {{< mermaid >}}
 sequenceDiagram
-participant A as Transaction A
-participant D as Database
-participant B as Transaction B
+    participant A as Transaction A
+    participant D as Database
+    participant B as Transaction B
 
     A->>D: UPDATE account 1
     Note over A,D: A holds lock on account 1
@@ -570,7 +629,7 @@ The important requirement is that **the retry must start a new transaction**.
 
 Retrying an individual SQL statement inside a transaction that has already been aborted is generally insufficient.
 
-### 5.2 Ambiguous Commit Outcomes
+### Ambiguous Commit Outcomes
 
 A more difficult failure occurs when the connection is lost during commit.
 
@@ -600,7 +659,8 @@ Blindly retrying a non-idempotent operation can therefore execute it twice.
 
 This distinction is particularly important for payments, transfers, and other operations that must not be duplicated.
 
-The usual solution is to associate the logical operation with a stable identifier and make duplicate execution detectable.
+The usual solution is to associate the logical operation with a stable identifier and make duplicate execution
+detectable.
 
 For example:
 
@@ -613,22 +673,25 @@ CREATE TABLE transfers (
 );
 ```
 
-The transfer identifier can serve as an idempotency key when it is inserted in the same transaction as the account updates.
+The transfer identifier can serve as an idempotency key when it is inserted in the same transaction as the account
+updates.
 
 A retry using the same identifier must not apply the transfer again.
 
 The database's uniqueness constraint provides the foundation for duplicate detection, while application logic determines
 how an existing operation is handled.
 
-See [Designing Idempotent REST APIs](/posts/designing-idempotent-rest-apis/) for a more detailed treatment of idempotency keys and request semantics.
+See [Designing Idempotent REST APIs](/posts/designing-idempotent-rest-apis/) for a more detailed treatment of
+idempotency keys and request semantics.
 
-### 5.3 Transaction Retry Boundaries
+### Transaction Retry Boundaries
 
 Spring Retry can be used to retry transient transaction failures.
 
 A critical detail is the ordering of retry and transaction interceptors.
 
-The retry interceptor must execute outside the transaction interceptor so that every attempt receives a fresh transaction.
+The retry interceptor must execute outside the transaction interceptor so that every attempt receives a fresh
+transaction. The retry scope must include the commit, since a serialization failure can be reported when committing.
 
 {{< mermaid >}}
 sequenceDiagram
@@ -699,8 +762,9 @@ public class TransferService {
 ```
 
 Each retry invokes the transactional service through its Spring proxy. With `REQUIRES_NEW` propagation, every attempt
-starts an independent transaction, even when the caller has an existing transaction. A failed attempt is rolled back
-before the retry interceptor initiates another attempt.
+starts an independent transaction. In this example the retrying service is non-transactional; invoking it from an
+existing transaction would violate the transaction ownership convention described earlier. For serialization failures
+and deadlocks, the failed transaction is rolled back before the retry interceptor initiates another attempt.
 
 Actual exception types depend on the persistence framework, transaction manager, and exception translation. Retry
 policies should be tested against the database errors the application encounters.
@@ -717,7 +781,7 @@ synchronized retry attempts. Spring Retry supports randomized exponential backof
 Retries should remain bounded, with a maximum delay and a limited number of attempts. Jitter reduces the probability of
 repeated contention but does not eliminate the underlying conflicts.
 
-### 5.4 Rollback Rules
+### Rollback Rules
 
 By default, Spring rolls back declarative transactions for unchecked exceptions and `Error` subclasses.
 
@@ -734,7 +798,8 @@ public void execute() throws BusinessException {
 }
 ```
 
-This distinction matters when service methods use checked exceptions to report failures that should invalidate the transaction.
+This distinction matters when service methods use checked exceptions to report failures that should invalidate the
+transaction.
 
 Another subtle case is catching an exception inside a transactional method:
 
@@ -758,23 +823,6 @@ If the method subsequently returns normally, the transaction may still fail duri
 
 Failures that invalidate the unit of work should generally propagate to the transaction boundary, where rollback and
 retry decisions can be made consistently.
-
-## Conclusion
-
-Spring Boot and Spring Data simplify transaction management, but they do not eliminate the underlying database semantics.
-
-Reliable transaction design starts with choosing appropriate boundaries and keeping them short. It also requires
-understanding when connections and transactions are established, how isolation affects concurrent operations, and which
-failures can safely be retried.
-
-Three principles are particularly important:
-
-- Define transaction boundaries around complete database operations rather than individual repository calls.
-- Use concurrency control appropriate to the business invariants, not merely the default isolation level.
-- Treat transient transaction failures and ambiguous commit outcomes as different problems.
-
-Transactions provide atomicity within the database. Correctness across retries, external systems, and network failures
-requires additional application-level design.
 
 ## References
 
