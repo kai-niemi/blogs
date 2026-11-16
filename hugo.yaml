@@ -1,5 +1,5 @@
 baseURL: "https://blog.cloudneutral.se/"
-languageCode: "en-us"
+languageCode: "en-US"
 title: "CloudNeutral"
 theme: "PaperMod"
 

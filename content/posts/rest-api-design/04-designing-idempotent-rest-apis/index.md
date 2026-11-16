@@ -1,9 +1,9 @@
 ---
-title: "Designing Idempotent REST APIs: Stateless Preconditions and Idempotency Keys"
+title: "Designing Idempotent REST APIs"
 description: "Explore two approaches to making REST API operations safer to retry: stateless resource-state preconditions and idempotency keys. Learn their guarantees, trade-offs, and concurrency considerations."
 summary: "How do you safely retry a POST request when the outcome is unknown? Compare stateless preconditions and idempotency keys through funds transfers and order creation."
 date: 2022-10-19
-lastmod: 2026-11-02
+lastmod: 2026-11-16
 draft: false
 tags:
   - REST
@@ -11,6 +11,9 @@ tags:
   - API Design
   - Idempotency
   - Distributed Systems
+weight: 4
+series:
+  - rest-api-design
 categories:
   - Software Engineering
 showToc: true
