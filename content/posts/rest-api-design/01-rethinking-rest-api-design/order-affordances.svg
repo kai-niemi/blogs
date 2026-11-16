@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="440" viewBox="0 0 900 440" role="img" aria-labelledby="title desc">
+    <title id="title">Advertised order interactions before and after cancellation</title>
+    <desc id="desc">A placed order advertises os:items, os:cancel and os:pay. After cancellation, the cancelled order still advertises os:items, but no longer advertises os:cancel or os:pay.</desc>
+    <style>
+        .heading{font:600 24px system-ui,-apple-system,sans-serif;fill:#1c2835}
+        .label{font:600 17px system-ui,-apple-system,sans-serif;fill:#263646}
+        .rel{font:16px ui-monospace,SFMono-Regular,Consolas,monospace;fill:#263646}
+        .caption{font:14px system-ui,-apple-system,sans-serif;fill:#526474}
+        .card{fill:#fff;stroke:#9eb2c3;stroke-width:2}
+        .band{fill:#e8f0f7}
+        .pill{fill:#eaf5ed;stroke:#a7ceb2}
+        .arrow{stroke:#506a80;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round}
+    </style>
+    <rect x="12" y="12" width="876" height="416" rx="16" fill="#f7fafc" stroke="#d8e2ea"/>
+    <text x="450" y="55" text-anchor="middle" class="heading">State-dependent affordances</text>
+    <rect x="42" y="104" width="315" height="248" rx="12" class="card"/>
+    <path d="M54 104 H345 Q357 104 357 116 V164 H42 V116 Q42 104 54 104" class="band"/>
+    <text x="199" y="142" text-anchor="middle" class="label">Order: placed</text>
+    <text x="73" y="198" class="rel">os:items</text>
+    <text x="73" y="247" class="rel">os:cancel</text>
+    <text x="73" y="296" class="rel">os:pay</text>
+    <path d="M378 228 H511" class="arrow"/>
+    <path d="M498 216 L512 228 L498 240" class="arrow"/>
+    <rect x="390" y="180" width="111" height="32" rx="16" class="pill"/>
+    <text x="445" y="201" text-anchor="middle" class="caption">Cancel</text>
+    <rect x="533" y="104" width="315" height="248" rx="12" class="card"/>
+    <path d="M545 104 H836 Q848 104 848 116 V164 H533 V116 Q533 104 545 104" class="band"/>
+    <text x="691" y="142" text-anchor="middle" class="label">Order: cancelled</text>
+    <text x="564" y="198" class="rel">os:items</text>
+    <text x="691" y="283" text-anchor="middle" class="caption">os:cancel and os:pay</text>
+    <text x="691" y="306" text-anchor="middle" class="caption">no longer advertised</text>
+    <text x="450" y="396" text-anchor="middle" class="caption">Illustrative subset of links; other relations are omitted.</text>
+</svg>
