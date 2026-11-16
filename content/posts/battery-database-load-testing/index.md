@@ -1,6 +1,7 @@
 ---
-title: "Battery: A Workload-Driven Database Load Testing Tool"
+title: "Workload-Driven Database Load Testing with Battery"
 date: 2026-10-10
+lastmod: 2026-11-16
 draft: false
 slug: "battery-database-load-testing"
 description: "Model realistic OLTP workloads using YAML, SQL and scripting."
