@@ -2,6 +2,7 @@
 title: "Rethinking REST API Design"
 description: "Why REST's uniform interface deserves another look, beyond HTTP endpoints and generated clients."
 date: 2026-11-16
+lastmod: 2026-11-18
 draft: false
 weight: 1
 tags:
@@ -351,3 +352,5 @@ A client might retrieve an order with an `os:cancel` link, only for another requ
 cancellation is submitted. The server must evaluate the cancellation rules again rather than treating the previously
 advertised link as authorization to proceed.
 
+In [Reducing REST Client-Server Coupling]({{< ref "/posts/rest-api-design/02-reducing-rest-client-server-coupling" >}}),
+we'll examine how changes to business rules and interaction details affect clients, and which dependencies runtime-discovered controls can reduce.

@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 490" role="img" aria-labelledby="title desc">
+<title id="title">Predefined versus runtime-discovered API interactions</title>
+<desc id="desc">Left: a conventional client learns endpoint invocation details from an API specification before running. Right: a hypermedia client knows relation semantics and media types, then discovers links and forms from representations during execution.</desc>
+<defs><marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0 0 L9 4.5 L0 9 Z" fill="#54718b"/></marker></defs>
+<rect width="1100" height="490" rx="20" fill="#f7f9fc"/>
+<rect x="24" y="25" width="510" height="438" rx="16" fill="#fff" stroke="#d6e0e9" stroke-width="2"/>
+<rect x="566" y="25" width="510" height="438" rx="16" fill="#fff" stroke="#d6e0e9" stroke-width="2"/>
+<g font-family="Arial, Helvetica, sans-serif" fill="#1b2b3a">
+<text x="279" y="67" font-size="24" font-weight="700" text-anchor="middle">Endpoint-oriented client</text>
+<text x="279" y="94" font-size="15" fill="#536779" text-anchor="middle">Invocation details fixed before execution</text>
+<text x="821" y="67" font-size="24" font-weight="700" text-anchor="middle">Hypermedia-driven client</text>
+<text x="821" y="94" font-size="15" fill="#536779" text-anchor="middle">Interaction details discovered at runtime</text>
+</g>
+<g font-family="Arial, Helvetica, sans-serif" text-anchor="middle" font-size="18" fill="#17324b">
+<rect x="124" y="123" width="310" height="67" rx="10" fill="#eaf1f8" stroke="#8ba8c1"/><text x="279" y="151" font-weight="700">API contract</text><text x="279" y="174" font-size="15">Operations, paths, methods</text>
+<rect x="124" y="238" width="310" height="67" rx="10" fill="#eaf1f8" stroke="#8ba8c1"/><text x="279" y="266" font-weight="700">Client code / SDK</text><text x="279" y="289" font-size="15">Known invocation contracts</text>
+<rect x="124" y="353" width="310" height="67" rx="10" fill="#f0f3f6" stroke="#aebdc8"/><text x="279" y="380" font-weight="700">Server</text><text x="279" y="403" font-size="15">Executes requested operation</text>
+<rect x="666" y="123" width="310" height="67" rx="10" fill="#e8f3ef" stroke="#7fae9e"/><text x="821" y="151" font-weight="700">Client contract</text><text x="821" y="174" font-size="15">Relations, media types, semantics</text>
+<rect x="666" y="238" width="310" height="67" rx="10" fill="#e8f3ef" stroke="#7fae9e"/><text x="821" y="266" font-weight="700">Current representation</text><text x="821" y="289" font-size="15">Links and form templates</text>
+<rect x="666" y="353" width="310" height="67" rx="10" fill="#f0f3f6" stroke="#aebdc8"/><text x="821" y="380" font-weight="700">Client follows control</text><text x="821" y="403" font-size="15">Target and method from response</text>
+</g>
+<g fill="none" stroke="#54718b" stroke-width="2.5" marker-end="url(#arrow)"><path d="M279 190 V235"/><path d="M279 305 V350"/><path d="M821 190 V235"/><path d="M821 305 V350"/></g>
+</svg>

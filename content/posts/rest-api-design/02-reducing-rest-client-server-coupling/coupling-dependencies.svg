@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="690" viewBox="0 0 1200 690" role="img" aria-labelledby="title desc">
+    <title id="title">Where client-server coupling resides</title>
+    <desc id="desc">Comparison of predefined invocation and runtime-discovered hypermedia controls across URI, invocation, workflow, and shared semantics.</desc>
+    <style>
+        text{font-family:Arial,Helvetica,sans-serif;fill:#202b38} .title{font-size:28px;font-weight:700}.subtitle{font-size:16px;fill:#566575}.head{font-size:21px;font-weight:700}.label{font-size:15px;font-weight:700;fill:#46576a}.body{font-size:17px}.small{font-size:14px;fill:#596a7c}.mono{font-family:Consolas,Monaco,monospace;font-size:16px}.box{fill:#fff;stroke:#d9e1e8;stroke-width:1.5}.left{fill:#f5f7f9}.right{fill:#f1f7f5}.divider{stroke:#dbe2e8;stroke-width:1}.pill{fill:#e8f2ed;stroke:#bcd7c8}.shared{fill:#fff7e9;stroke:#ead6ae}
+    </style>
+    <rect width="1200" height="690" fill="#ffffff"/>
+    <text x="55" y="62" class="title">What the client must know</text>
+    <text x="55" y="91" class="subtitle">The same cancellation interaction, with different sources for its mechanics and availability</text>
+    <rect x="55" y="128" width="526" height="442" rx="12" class="left" stroke="#dce3e9"/>
+    <rect x="619" y="128" width="526" height="442" rx="12" class="right" stroke="#cbded4"/>
+    <text x="82" y="169" class="head">Predefined invocation</text>
+    <text x="646" y="169" class="head">Runtime-discovered controls</text>
+    <text x="82" y="196" class="small">Invocation details and eligibility assumed by client</text>
+    <text x="646" y="196" class="small">Client interprets controls supplied by server</text>
+    <rect x="82" y="220" width="472" height="247" rx="9" class="box"/>
+    <text x="102" y="252" class="label">CLIENT KNOWS</text>
+    <line x1="102" y1="265" x2="534" y2="265" class="divider"/>
+    <text x="102" y="298" class="label">URI</text><text x="247" y="298" class="mono">/orders/{id}/cancel</text>
+    <line x1="102" y1="315" x2="534" y2="315" class="divider"/>
+    <text x="102" y="349" class="label">Invocation</text><text x="247" y="349" class="mono">POST + request body</text>
+    <line x1="102" y1="366" x2="534" y2="366" class="divider"/>
+    <text x="102" y="400" class="label">Availability</text><text x="247" y="400" class="mono">status == PLACED</text>
+    <text x="102" y="439" class="small">These details are embedded in deployed code or SDK.</text>
+    <rect x="646" y="220" width="472" height="247" rx="9" class="box"/>
+    <text x="666" y="252" class="label">SERVER REPRESENTATION SUPPLIES</text>
+    <line x1="666" y1="265" x2="1098" y2="265" class="divider"/>
+    <text x="666" y="298" class="label">URI</text><text x="812" y="298" class="mono">os:cancel → href</text>
+    <line x1="666" y1="315" x2="1098" y2="315" class="divider"/>
+    <text x="666" y="349" class="label">Invocation</text><text x="812" y="349" class="mono">HAL-FORMS template</text>
+    <line x1="666" y1="366" x2="1098" y2="366" class="divider"/>
+    <text x="666" y="400" class="label">Availability</text><text x="812" y="400" class="mono">os:cancel present?</text>
+    <text x="666" y="439" class="small">Client reads controls instead of fixing these details.</text>
+    <rect x="82" y="485" width="472" height="62" rx="8" class="shared"/>
+    <rect x="646" y="485" width="472" height="62" rx="8" class="shared"/>
+    <text x="102" y="509" class="label">STILL REQUIRED</text>
+    <text x="102" y="533" class="body">Meaning of cancellation and outcomes</text>
+    <text x="666" y="509" class="label">STILL REQUIRED</text>
+    <text x="666" y="533" class="body">Relation semantics and client goal</text>
+    <text x="55" y="615" class="body">Runtime discovery moves interaction mechanics and availability out of the client.</text>
+    <text x="55" y="644" class="subtitle">It does not remove the need for shared semantics or guarantee that a submitted request will succeed.</text>
+</svg>
