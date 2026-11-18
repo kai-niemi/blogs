@@ -3,7 +3,7 @@ title: "Designing Idempotent REST APIs"
 description: "Explore two approaches to making REST API operations safer to retry: stateless resource-state preconditions and idempotency keys. Learn their guarantees, trade-offs, and concurrency considerations."
 summary: "How do you safely retry a POST request when the outcome is unknown? Compare stateless preconditions and idempotency keys through funds transfers and order creation."
 date: 2022-10-19
-lastmod: 2026-11-16
+lastmod: 2026-11-18
 draft: false
 tags:
   - REST
@@ -11,7 +11,7 @@ tags:
   - API Design
   - Idempotency
   - Distributed Systems
-weight: 4
+weight: 0
 series:
   - rest-api-design
 categories:
@@ -27,8 +27,8 @@ cover:
   hiddenInList: true
 ---
 
-*Substantially revised October–November 2026, including a hands-on idempotency key implementation using Java, 
-Spring Boot, and PostgreSQL.*
+*Substantially revised October–November 2026, including a working idempotency key implementation using Java, Spring
+Boot, and PostgreSQL.*
 
 What happens when a client submits a payment or funds transfer, the server successfully processes it, but the response
 is lost?
@@ -452,17 +452,18 @@ Unlike stateless preconditions, idempotency keys identify **the operation itself
 
 An idempotency record that retains completed HTTP responses might contain:
 
-```text
-Idempotency record
-------------------
-Key
-Request fingerprint
-Status
-Response status
-Response body
-Created at
-Expires at
-```
+{{< mermaid >}}
+classDiagram
+    class IdempotencyRecord {
+        +String key
+        +String requestFingerprint
+        +String status
+        +int responseStatus
+        +String responseBody
+        +Timestamp createdAt
+        +Timestamp expiresAt
+    }
+{{< /mermaid >}}
 
 The request fingerprint represents the relevant parameters of the original operation.
 The key should also be scoped appropriately, for example to a particular client or tenant, so unrelated clients cannot
@@ -536,14 +537,13 @@ FUNCTION submitTransfer(key, request):
   RETURN response
 ```
 
+This is illustrative pseudocode rather than a complete database algorithm.
+
 The atomic claim must serialize concurrent requests using the same key. If another transaction currently holds the
 claim, the server can wait for its outcome or return a documented in-progress response. If that transaction aborts, a
 subsequent attempt may acquire the key and execute the operation.
 
-This is illustrative pseudocode rather than a complete database algorithm.
-
 The critical requirement is that **the transfer and its completed idempotency record commit atomically**.
-
 A database transaction can provide this guarantee when both the business operation and idempotency record reside in the
 same transactional database.
 
@@ -657,14 +657,17 @@ operation's semantics. For this endpoint, the method, path, and body are suffici
 
 A simplified idempotency record contains:
 
-```text
-Scope
-Key
-Request fingerprint
-Resource ID
-Created at
-Expires at
-```
+{{< mermaid >}}
+classDiagram
+    class IdempotencyRecord {
+        +String scope
+        +String key
+        +String requestFingerprint
+        +UUID resourceId
+        +Timestamp createdAt
+        +Timestamp expiresAt
+    }
+{{< /mermaid >}}
 
 If the key is successfully acquired, the server creates the order using the resource identifier associated with the key.
 
@@ -721,7 +724,6 @@ is rejected. Otherwise, the representation of the existing resource is retrieved
 operation again.
 
 Both key acquisition and order creation execute within the same database transaction.
-
 This ensures that a committed order creation has a corresponding idempotency record. If order creation fails, the
 transaction rolls back the key acquisition as well.
 
@@ -754,6 +756,10 @@ idempotency key and the created resource.
 Idempotency keys cannot necessarily be retained forever.
 A server might retain them for a configurable period, such as 24 hours, after which the records are eligible for
 deletion.
+
+Similar time-bounded deduplication mechanisms are used by messaging systems such as 
+[NATS JetStream](https://docs.nats.io/learn/jetstream/publishing?_highlight=dedup#avoiding-duplicate-writes), where message
+identifiers are retained within a configurable window to suppress duplicate publications.
 
 This creates an important limitation:
 
@@ -885,19 +891,5 @@ A retry of an already completed operation can return its recorded result without
 
 The API must define how these mechanisms interact, including which checks take precedence.
 
-## Conclusion
-
-Reliable APIs must account for requests whose outcomes become uncertain because of network failures.
-
-Stateless preconditions protect operations against changes to relevant resource state. They are useful for optimistic
-concurrency control but cannot identify whether a particular request has already executed.
-
-Idempotency keys identify logical operations across retries, enabling request deduplication and recovery of previously
-completed outcomes.
-
-The server can retain the original HTTP response or store a reference to the affected resource. Both approaches require
-atomic persistence and concurrency control, but they differ in their storage requirements and response semantics.
-
-These mechanisms can also be combined when an operation needs both state validation and safe retries.
-
-The goal isn't to prevent retries, since that's not practically possible. It's to make them safe and predictable.
+The goal isn't to prevent retries, since reliable failure recovery often depends on them. 
+It is to ensure that retrying an operation doesn't produce unintended duplicate effects.
