@@ -2,7 +2,7 @@
 title: "Write Patterns with Spring Data"
 series_weight: 2
 date: 2022-07-24
-lastmod: 2026-10-26
+lastmod: 2026-11-19
 draft: false
 series:
   - data-access
@@ -74,7 +74,7 @@ respectively.
 
 The following example illustrates how concurrent read-modify-write operations can lead to a lost update.
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
 participant T1 as Transaction 1
 participant DB as PostgreSQL (READ COMMITTED)
@@ -98,7 +98,7 @@ participant T2 as Transaction 2
     T2->>DB: COMMIT
 
     Note over DB: Final balance = 50 (lost update)
-{{< /mermaid >}}
+```
 
 The expected balance is 20, but the second transaction overwrites the first transaction's modification. This is a **lost
 update**.
@@ -146,7 +146,7 @@ In PostgreSQL, concurrent updates to the same row are coordinated through row lo
 transaction waiting for another update can apply its expression to the updated row after the preceding transaction
 commits.
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
 participant T1 as Transaction 1
 participant DB as PostgreSQL (READ COMMITTED)
@@ -168,7 +168,7 @@ participant T2 as Transaction 2
     T2->>DB: COMMIT
 
     Note over DB: Final balance = 20
-{{< /mermaid >}}
+```
 
 Both modifications can be preserved without an application-level read-modify-write sequence.
 
@@ -496,7 +496,7 @@ VALUES (:accountId, :enabled);
 
 The problem is that another transaction can insert the same row between the existence check and the insert.
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
 participant T1 as Transaction 1
 participant DB as PostgreSQL
@@ -515,7 +515,7 @@ participant T2 as Transaction 2
     DB-->>T2: Unique constraint violation
 
     Note over T1,T2: Both existence checks found no row
-{{< /mermaid >}}
+```
 
 Even if the application checks first, the database must still enforce the primary-key constraint.
 

@@ -18,7 +18,10 @@ cover:
   hiddenInList: true
 ---
 
-## Cost of Knowing Too Much
+This article is part of a series on REST API design, examining how runtime-discovered interactions reduce client-server
+coupling and accommodate evolving workflows.
+
+{{< series-nav >}}
 
 Suppose a client retrieves an order:
 
@@ -276,12 +279,12 @@ The client associates particular resource states with predefined operations.
 
 Initially, the payment workflow looks like this:
 
-{{< mermaid >}}
+```mermaid
 flowchart TD
     placed -->|os:pay| payment_pending
     payment_pending --> paid
     payment_pending --> payment_blocked
-{{< /mermaid >}}
+```
 
 The client assumes that payment begins in the `placed` state and that a `payment_pending` order should be checked until
 payment completes or fails.

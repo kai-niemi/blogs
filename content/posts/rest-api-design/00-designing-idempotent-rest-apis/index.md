@@ -27,8 +27,13 @@ cover:
   hiddenInList: true
 ---
 
+This article is part of a series on REST API design, exploring client-server coupling, hypermedia, and the practical
+implications of building RESTful APIs.
+
 *Substantially revised October–November 2026, including a working idempotency key implementation using Java, Spring
 Boot, and PostgreSQL.*
+
+{{< series-nav >}}
 
 What happens when a client submits a payment or funds transfer, the server successfully processes it, but the response
 is lost?
@@ -110,7 +115,7 @@ A client can send a request without knowing whether the server received it, proc
 
 Consider a funds transfer between two accounts:
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
 participant C as Client
 participant S as Server
@@ -127,7 +132,7 @@ participant S as Server
     deactivate S
 
     Note over C: Timeout
-{{< /mermaid >}}
+```
 
 The transfer completed successfully, but the response was lost.
 The client now faces an ambiguous outcome.
@@ -452,7 +457,7 @@ Unlike stateless preconditions, idempotency keys identify **the operation itself
 
 An idempotency record that retains completed HTTP responses might contain:
 
-{{< mermaid >}}
+```mermaid
 classDiagram
     class IdempotencyRecord {
         +String key
@@ -463,7 +468,7 @@ classDiagram
         +Timestamp createdAt
         +Timestamp expiresAt
     }
-{{< /mermaid >}}
+```
 
 The request fingerprint represents the relevant parameters of the original operation.
 The key should also be scoped appropriately, for example to a particular client or tenant, so unrelated clients cannot
@@ -657,7 +662,7 @@ operation's semantics. For this endpoint, the method, path, and body are suffici
 
 A simplified idempotency record contains:
 
-{{< mermaid >}}
+```mermaid
 classDiagram
     class IdempotencyRecord {
         +String scope
@@ -667,7 +672,7 @@ classDiagram
         +Timestamp createdAt
         +Timestamp expiresAt
     }
-{{< /mermaid >}}
+```
 
 If the key is successfully acquired, the server creates the order using the resource identifier associated with the key.
 

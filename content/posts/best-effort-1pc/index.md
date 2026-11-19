@@ -1,7 +1,7 @@
 ---
 title: "Best-Effort One-Phase Commit and the Dual-Write Problem"
 date: 2024-05-15
-lastmod: 2026-10-24
+lastmod: 2026-11-19
 draft: false
 description: "Understanding best-effort one-phase commit, dual-write failures, transaction ordering, and idempotency when coordinating databases, message brokers, and remote APIs."
 tags:
@@ -43,7 +43,7 @@ committed atomically.
 
 Consider a service that processes an incoming message and updates a database:
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
 participant B as Message Broker
 participant A as Application
@@ -55,7 +55,7 @@ participant D as Database
     A->>D: Commit transaction
     D-->>A: Commit successful
     A->>B: Acknowledge message
-{{< /mermaid >}}
+```
 
 The database commit and message acknowledgement are separate operations. Even if both are individually transactional,
 there is no shared transaction covering them.
@@ -304,7 +304,7 @@ already been processed and avoid creating another transfer.
 This also addresses an important ambiguity in distributed systems: a request may succeed even when the client never
 receives its response.
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
 participant C as Client
 participant A as Remote API
@@ -321,7 +321,7 @@ participant A as Remote API
     Note right of A: Recognize duplicate
     A-->>C: Return original result
     deactivate A
-{{< /mermaid >}}
+```
 
 The client cannot determine whether the original request succeeded merely from a timeout. A stable idempotency key
 allows the remote service to associate retries with the same logical operation.
@@ -344,7 +344,7 @@ The transactional outbox pattern addresses the problem of updating a database an
 Instead of writing directly to the database and message broker, the application stores both the business update and an
 outgoing event in the same database transaction.
 
-{{< mermaid >}}
+```mermaid
 flowchart TD
 A["Application"] --> T
 
@@ -357,7 +357,7 @@ A["Application"] --> T
     T --> C["COMMIT"]
     C --> P["Outbox Publisher"]
     P -->|At-least-once delivery| M["Message Broker"]
-{{< /mermaid >}}
+```
 
 A separate process publishes committed outbox events to the broker, commonly through polling or change data capture
 (CDC). This removes the non-atomic database-and-broker write from the application transaction. However, publishing may
@@ -369,7 +369,7 @@ The inbox pattern complements the outbox by recording incoming messages or their
 The consumer can atomically record that a message has been processed alongside the corresponding business update.
 If the broker redelivers the same message, the consumer recognizes the duplicate and avoids repeating its effects.
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
 participant B as Message Broker
 participant C as Consumer
@@ -390,7 +390,7 @@ participant D as Database
     end
 
     C->>B: Acknowledge message
-{{< /mermaid >}}
+```
 
 A duplicate identifier should only be treated as successfully processed once the original transaction has committed.
 Concurrent attempts must be resolved through the database's uniqueness and transaction semantics.

@@ -2,7 +2,7 @@
 title: "Transaction Management with Spring Data"
 series_weight: 1
 slug: "transaction-management"
-lastmod: 2026-11-12
+lastmod: 2026-11-19
 date: 2022-07-24
 draft: false
 series:
@@ -230,7 +230,7 @@ a transaction before invoking the target method.
 
 The transaction interceptor commits when the method completes successfully or rolls back when an exception requires it.
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
     participant C as Caller
     participant P as Transaction Proxy
@@ -248,7 +248,7 @@ sequenceDiagram
     S-->>P: Return
     Note over P,D: Commit transaction
     P-->>C: Return
-{{< /mermaid >}}
+```
 
 The diagram represents the logical transaction lifecycle. Depending on the transaction manager and persistence provider,
 acquiring a physical database connection and starting the corresponding database transaction may be deferred until the
@@ -452,7 +452,7 @@ Transaction A subtracts 20, while transaction B subtracts 30.
 If each calculates a new balance in application code and writes it without concurrency protection, the final balance
 may reflect only one update.
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
     participant A as Transaction A
     participant D as Database
@@ -470,7 +470,7 @@ sequenceDiagram
     D-->>B: COMMIT
 
     Note over D: Final balance = 70<br/>Expected balance = 50
-{{< /mermaid >}}
+```
 
 Under PostgreSQL's default `READ COMMITTED` isolation, this can happen when an application reads a value and later
 writes an absolute replacement value.
@@ -596,7 +596,7 @@ Deadlocks are reported using SQLSTATE `40P01`.
 
 For example:
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
     participant A as Transaction A
     participant D as Database
@@ -618,7 +618,7 @@ sequenceDiagram
     D-->>B: ERROR 40P01
     B->>D: ROLLBACK
     D-->>A: Lock acquired
-{{< /mermaid >}}
+```
 
 PostgreSQL detects the deadlock and aborts one transaction.
 
@@ -635,7 +635,7 @@ A more difficult failure occurs when the connection is lost during commit.
 
 Consider:
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
     participant A as Application
     participant D as Database
@@ -646,7 +646,7 @@ sequenceDiagram
     A->>D: COMMIT
     Note over A,D: Connection lost
     Note over A: Commit outcome unknown
-{{< /mermaid >}}
+```
 
 The application cannot determine from the connection failure alone whether the transaction committed.
 
@@ -693,7 +693,7 @@ A critical detail is the ordering of retry and transaction interceptors.
 The retry interceptor must execute outside the transaction interceptor so that every attempt receives a fresh
 transaction. The retry scope must include the commit, since a serialization failure can be reported when committing.
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
     participant C as Caller
     participant R as Retry Interceptor
@@ -717,7 +717,7 @@ sequenceDiagram
     T->>D: COMMIT
     T-->>R: Success
     R-->>C: Success
-{{< /mermaid >}}
+```
 
 One way to make the boundaries explicit is to separate the retrying service from the transactional service:
 

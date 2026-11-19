@@ -2,7 +2,7 @@
 title: "Rethinking REST API Design"
 description: "Why REST's uniform interface deserves another look, beyond HTTP endpoints and generated clients."
 date: 2026-11-16
-lastmod: 2026-11-18
+lastmod: 2026-11-19
 draft: false
 weight: 1
 tags:
@@ -18,6 +18,11 @@ cover:
   relative: true
   hiddenInList: true
 ---
+
+This article is the first in a series on REST API design, examining resource-oriented APIs, hypermedia, and the
+distinction between REST and conventional HTTP APIs.
+
+{{< series-nav >}}
 
 Most APIs described as RESTful expose resources through HTTP, use familiar methods such as GET, POST, PUT, and DELETE,
 and return JSON representations. OpenAPI specifications document the available operations, while generated clients make
@@ -62,7 +67,7 @@ mechanism?
 
 ## Discovering and submitting an order
 
-{{< mermaid >}}
+```mermaid
 sequenceDiagram
     autonumber
     participant C as Client
@@ -75,7 +80,7 @@ sequenceDiagram
     Note over C: Extract application data<br/>and supply Idempotency-Key<br/>(required by API contract)
     C->>S: POST template.target<br/>(Content-Type: application/json)
     S-->>C: 201 Created + Location
-{{< /mermaid >}}
+```
 
 The [Order System](https://order-system.cloudneutral.se/) is a small example application built with Spring Boot and Spring
 HATEOAS. It uses HAL to describe resource relationships and HAL-FORMS to describe available operations.
