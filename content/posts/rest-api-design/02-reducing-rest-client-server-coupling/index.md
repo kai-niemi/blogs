@@ -1,7 +1,8 @@
 ---
 title: "Reducing REST Client-Server Coupling"
-description: "How runtime-discovered interactions reduce client dependencies, accommodate evolving workflows, and enable independent API evolution."
+description: "How runtime-discovered interactions reduce client-server coupling, accommodate changing workflows, and limit coordinated client updates."
 date: 2026-11-18
+lastmod: 2026-11-20
 draft: false
 weight: 2
 tags:
@@ -26,7 +27,7 @@ coupling and accommodate evolving workflows.
 Suppose a client retrieves an order:
 
 ```http
-GET /api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62
+GET http://localhost:8090/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62
 ```
 
 ```json
@@ -36,10 +37,11 @@ GET /api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62
 }
 ```
 
-We know the order's state. But can we cancel it? Pay for it? Where are its items? What request performs each operation?
+We know the order's state, but can we cancel it or pay for it? Where are its items, and what request performs 
+each operation?
 
-A conventional client learns these details from documentation, an OpenAPI description, or a generated SDK. Its application
-code might look like this:
+A conventional client developer learns these details from documentation, an OpenAPI description, or a generated SDK. The
+client's application code might look like this:
 
 ```java
 Order order = api.getOrder(orderId);
@@ -64,7 +66,7 @@ if (order.canCancel()) {
 }
 ```
 
-The server now owns the eligibility rule. But the client still needs to know how to invoke cancellation.
+The server now owns the eligibility rule, but the client still needs to know how to invoke cancellation.
 
 In a typical OpenAPI-generated SDK, `cancelOrder()` is bound to a predefined HTTP method, URI template, and request
 contract. Those details are hidden from application code, but they remain part of the deployed client.
@@ -80,7 +82,7 @@ Across many independently deployed consumers, even a small change can introduce 
 Hypermedia offers another option: communicate available interactions and their invocation details through resource
 representations, allowing clients to discover them at runtime.
 
-## Shared Understanding: Design Time and Runtime
+## Shared understanding: design time and runtime
 
 Every API requires a shared contract. Clients must understand the data they receive, the meaning of the operations they
 perform, and the conventions used to communicate with the server.
@@ -101,13 +103,12 @@ not provide an equivalent, complete API description from which conventional type
 
 The two approaches can be combined. An API might use OpenAPI to document its domain models and supported interactions,
 while using hypermedia to communicate which interactions are currently available and how to invoke them.
-
 A client can retain generated domain models and strongly typed operations while resolving targets and submission details
 dynamically.
 
 The distinction is between **what the client must understand in advance** and **what the server communicates at runtime**.
 
-## From Resource State to Available Interactions
+## From resource state to available interactions
 
 A resource representation normally describes the resource's current state. With hypermedia, it can also communicate the
 interactions currently available.
@@ -120,16 +121,16 @@ In the Order System, an order in the `placed` state can advertise links such as:
   "totalPrice": 149.00,
   "_links": {
     "self": {
-      "href": "/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62"
+      "href": "http://localhost:8090/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62"
     },
     "os:items": {
-      "href": "/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62/items"
+      "href": "http://localhost:8090/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62/items"
     },
     "os:cancel": {
-      "href": "/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62/cancel"
+      "href": "http://localhost:8090/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62/cancel"
     },
     "os:pay": {
-      "href": "/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62/payments"
+      "href": "http://localhost:8090/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62/payments"
     }
   }
 }
@@ -142,7 +143,7 @@ URI template omitted here for brevity.
 The client does not have to infer cancellation eligibility from `status == placed`. It can inspect whether the cancellation
 interaction is advertised.
 
-A HAL link alone, however, does not specify the HTTP method or request body required for a state-changing operation.
+A HAL link alone does not specify the HTTP method or request body required for a state-changing operation.
 
 With `Accept: application/prs.hal-forms+json`, the server can additionally provide a HAL-FORMS template:
 
@@ -151,19 +152,17 @@ With `Accept: application/prs.hal-forms+json`, the server can additionally provi
   "_templates": {
     "cancel": {
       "method": "POST",
-      "target": "/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62/cancel",
+      "target": "http://localhost:8090/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62/cancel",
       "properties": []
     }
   }
 }
 ```
 
-The client can obtain the submission details from the template rather than constructing the request itself.
+The client can obtain the submission details from the template, provided it knows how to select the appropriate one.
+HAL-FORMS does not define a general association between link relations and template names.
 
-The template name and link relation are distinct identifiers. A client needs a documented convention for selecting the
-appropriate template; matching their names is not a general HAL-FORMS rule.
-
-### Resource State and Application State
+### Resource state and application state
 
 The order's `status` is part of its resource state, which the server manages. A representation exposes selected information
 about that state.
@@ -178,7 +177,8 @@ Following `os:items` changes the client's navigation state without modifying the
 instead requests a resource-state change, which the server may accept or reject.
 
 The order's lifecycle can be modeled as a finite-state machine. That is a server-managed resource lifecycle, **not the
-client's application state machine**.
+client's application state machine**. A client can navigate through the application without reproducing every transition 
+in the server's resource lifecycle.
 
 ![Server-side order lifecycle with cancellation and payment highlighted as currently advertised interactions](order-state-transitions.svg)
 
@@ -186,19 +186,15 @@ client's application state machine**.
 Following `os:items` changes the client's navigation state without changing the order's lifecycle state. The diagram
 simplifies payment outcomes and other workflow details.*
 
-A client can navigate through the application without reproducing every transition in the server's resource lifecycle.
-
-## Discoverability Is a Form of Decoupling
+## Discoverability is a form of decoupling
 
 Starting from an API entry point, a client can follow named relationships and inspect the interactions offered by each
-representation.
+representation. Information discovered at runtime does not have to be embedded in every client. The degree of decoupling 
+depends on which details the server provides and which the client actually uses.
 
 ![What the client must know](coupling-dependencies.svg)
 
-Information discovered at runtime does not have to be embedded in every client. The degree of decoupling depends on which
-details the server provides and which the client actually uses.
-
-### URI Coupling
+### URI coupling
 
 A client following `os:cancel` does not need to construct or hardcode the cancellation URI.
 
@@ -206,63 +202,52 @@ Suppose the Order System changes its cancellation endpoint:
 
 ```text
 Before:
-POST /api/orders/{id}/cancel
+POST http://localhost:8090/api/orders/{id}/cancel
 
 After:
-POST /api/orders/{id}/cancellation
+POST http://localhost:8090/api/orders/{id}/cancellation
 ```
 
 The operation still has the same meaning and accepts the same inputs. Only its URI has changed.
-
-Clients with `/cancel` embedded in their invocation logic continue working while the old endpoint remains supported. If
-the server removes it, those clients must update or rely on a compatibility mechanism.
-
+Clients with `/cancel` embedded in their invocation logic continue working while the old endpoint remains supported. 
+If the server removes it, those clients must update or rely on a compatibility mechanism.
 This applies to handwritten clients and generated SDKs with fixed URI templates.
 
 A client that discovers the cancellation target from the current representation can use `/cancellation` without changing
 its code, provided it reaches the order through a stable entry point or previously discovered link.
 
-### Invocation Coupling
+### Invocation coupling
 
-URI independence does not imply independence from invocation details.
-
-A client might discover `os:cancel` but still assume cancellation requires a `POST` request with a particular body.
+URI independence does not imply independence from invocation details. A client might discover `os:cancel` but still 
+assume cancellation requires a `POST` request with a particular body.
 
 HAL-FORMS can reduce this dependency by describing the submission method, target, and input properties at runtime.
-
 There are limits. If the server adds a mandatory cancellation reason, a generic interactive client might render the new
 field and collect a value. An automated client cannot necessarily determine which reason is appropriate.
 
 Likewise, changing an HTTP method may affect semantics. A client must support the method and understand the interaction
 it performs.
 
-### Workflow Coupling
+### Workflow coupling
 
 A client may know how to invoke every operation but still assume the server follows a particular sequence of states and
-transitions.
-
-It might assume that an order can always be paid when its status is `placed`, for example.
+transitions. It might assume that an order can always be paid when its status is `placed`, for example.
 
 Advertised controls let the client check which interactions are currently available rather than infer them entirely from
-resource state.
-
-This does not tell the client which interaction advances its goal, whether an unavailable interaction might become
-available later, or how to recover when no suitable interaction is offered.
-
+resource state. This does not tell the client which interaction advances its goal, whether an unavailable interaction 
+might become available later, or how to recover when no suitable interaction is offered.
 Those decisions remain part of the client's application logic.
 
-### What Remains Coupled?
+### What remains coupled?
 
 A client following `os:cancel` still depends on the meaning of cancellation, the expected outcomes, and the conventions
-used to interpret the representation.
-
-It need not know the cancellation URI in advance. With suitable HAL-FORMS processing, it can also discover supported
-submission details.
+used to interpret the representation. It need not know the cancellation URI in advance. With suitable HAL-FORMS processing,
+it can also discover supported submission details.
 
 Hypermedia therefore reduces coupling to **server-controlled interaction mechanics and availability**, not to the shared
 meaning of interactions or the client's business requirements.
 
-## Evolving Workflows Without Rewriting Clients
+## Evolving workflows without rewriting clients
 
 Consider a client that embeds part of the server's payment workflow:
 
@@ -289,33 +274,29 @@ flowchart TD
 The client assumes that payment begins in the `placed` state and that a `payment_pending` order should be checked until
 payment completes or fails.
 
-Now suppose the server no longer offers payment immediately for every `placed` order. The order may remain `placed` while
+Suppose the server no longer offers payment immediately for every `placed` order. The order may remain `placed` while
 the server determines whether payment can proceed. Once payment becomes available, the representation advertises `os:pay`.
 
-This is a hypothetical change to the Order System's payment workflow, not a claim about its current implementation.
-
-The interaction has not changed, but its availability has. A client relying on PLACED -> pay may attempt payment
+The interaction has not changed, but its availability has. A client relying on `PLACED -> pay` may attempt payment
 prematurely.
 
 But what happens when `os:pay` is absent?
-
 The client may need to refresh the representation, follow another advertised interaction, report that payment is
 unavailable, or stop processing. Which behavior is appropriate depends on the application's goal and contract.
 
 Hypermedia communicates interaction availability. It does not automatically provide a waiting or recovery strategy.
-
 The distinction becomes important when workflows evolve. Changing the availability or ordering of known interactions can
 be compatible with existing clients. Introducing a mandatory interaction with unfamiliar semantics may require new client
 logic, even if the server advertises it through hypermedia.
 
-### Couldn't OpenAPI Do the Same?
+### Couldn't OpenAPI do the same?
 
 Yes. A conventional API can expose capability flags or available actions:
 
 ```json
 {
   "status": "placed",
-  "availableActions": [
+  "allowedActions": [
     "pay"
   ]
 }
@@ -324,50 +305,38 @@ Yes. A conventional API can expose capability flags or available actions:
 OpenAPI does not prevent an API from exposing available actions, interaction targets, or submission metadata. HAL and
 HAL-FORMS provide established conventions for representing those controls.
 
-The distinction is not OpenAPI versus hypermedia, but how much of the interaction contract remains fixed in the client.
+## The economics of independent evolution
 
-## The Economics of Independent Evolution
-
-Removing the old `/cancel` endpoint requires clients with that URI embedded in their invocation logic to
-update. Clients resolving the target dynamically can continue using the new URI without modification.
-
-Preserving the old endpoint may still be cheaper than introducing hypermedia. Endpoint renaming alone is not a compelling
-reason to adopt it.
+Preserving the old endpoint may still be cheaper than introducing hypermedia. Endpoint renaming alone is not a
+compelling reason to adopt it.
 
 The more interesting case is an API with many independently maintained consumers and interactions that evolve over time.
 Compatible changes to interaction targets, submission mechanics, or the availability of known operations can sometimes be
 made without coordinating consumer releases.
 
 Compatibility depends on the client's existing capabilities, not merely on what the server advertises.
-
 The economic benefit depends on the frequency of those changes, the number of affected consumers, and the cost of
 coordinating their releases.
 
-## The Cost of Runtime Flexibility
+## The cost of runtime flexibility
 
 Runtime discovery shifts some responsibilities from design time to execution. Clients must understand HAL and HAL-FORMS
 processing conventions, while domain-specific relation semantics still need documentation.
 
-There are testing implications too.
-
-A client that discovers controls dynamically must be tested against representations with different combinations of
-available interactions, including missing, unfamiliar, and changing controls.
+There are testing implications too. A client that discovers controls dynamically must be tested against representations 
+with different combinations of available interactions, including missing, unfamiliar, and changing controls.
 
 Some mistakes that predefined operations might expose during compilation or contract testing may instead surface when a
 particular runtime interaction is encountered.
-
-A practical design can combine generated models and strongly typed application interfaces with runtime-discovered
-interaction targets and submission details.
 
 The additional flexibility must justify the additional client infrastructure.
 
 For a small API with stable operations and easily updated consumers, predefined invocation contracts may be simpler. For
 a long-lived API with independently deployed consumers, reducing coordinated client releases may justify the investment.
 
-## It Takes Two to Tango
+## It takes two to tango
 
 Hypermedia only reduces coupling when clients actually follow the controls the server provides.
-
 A server can return HAL links and HAL-FORMS templates, but clients that ignore them remain dependent on their predefined
 request targets and workflow assumptions.
 
@@ -378,7 +347,7 @@ cancellation is no longer permitted.
 The client submits the previously advertised request:
 
 ```http
-POST /api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62/cancel
+POST http://localhost:8090/api/orders/8e2f3a91-6d47-4c8b-9e13-2a7b5c0d4f62/cancel
 ```
 
 The server may respond:
