@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="420" viewBox="0 0 960 420" role="img" aria-labelledby="title desc">
+    <title id="title">Text-only order management terminal</title>
+    <desc id="desc">A retro terminal window displaying a Zork-inspired order management session ending with a grue.</desc>
+    <rect width="960" height="420" fill="#10151d" rx="18"/>
+    <rect x="1" y="1" width="958" height="418" rx="17" fill="none" stroke="#36404c" stroke-width="2"/>
+    <path d="M18 0H942Q960 0 960 18V54H0V18Q0 0 18 0Z" fill="#252d38"/>
+    <path d="M0 54H960" stroke="#3b4552"/>
+    <circle cx="28" cy="27" r="7" fill="#ff6059"/>
+    <circle cx="52" cy="27" r="7" fill="#ffbd2e"/>
+    <circle cx="76" cy="27" r="7" fill="#28c840"/>
+    <text x="480" y="33" text-anchor="middle" fill="#b7c2cf" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="15">order-system — terminal</text>
+    <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace" font-size="22" fill="#d7e2dc">
+        <text x="36" y="110">Welcome to text-only order management.</text>
+        <text x="36" y="165">You are standing in a pitch-black system lobby.</text>
+        <text x="36" y="198">You feel a light flurry of snow.</text>
+        <text x="36" y="267" fill="#8fdfa8">&gt; go north</text>
+        <text x="36" y="336" fill="#f0b3a8">You have been eaten by a grue.</text>
+    </g>
+</svg>
