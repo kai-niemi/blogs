@@ -1,7 +1,7 @@
 ---
 title: "Workload-Driven Database Load Testing with Battery"
 date: 2026-10-10
-lastmod: 2026-11-16
+lastmod: 2026-11-22
 draft: false
 slug: "battery-database-load-testing"
 description: "Model realistic OLTP workloads using YAML, SQL and scripting."
@@ -12,6 +12,8 @@ tags:
   - PostgreSQL
   - CockroachDB
   - Java
+aliases:
+  - /generate-workloads-for-cockroachdb/
 categories:
   - Databases
 cover:
