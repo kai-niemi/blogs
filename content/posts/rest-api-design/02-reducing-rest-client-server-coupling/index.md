@@ -14,7 +14,7 @@ series:
   - rest-api-design
 cover:
   image: "cover.webp"
-  caption: 'Photo by <a href="https://unsplash.com/@stvlynn?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Steven Lynn</a> on <a href="https://unsplash.com/photos/dancing-metal-figures-create-a-whimsical-art-display-LLyBAS4e2wQ?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>'
+  caption: 'Photo by [Steven Lynn](https://unsplash.com/@stvlynn?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/dancing-metal-figures-create-a-whimsical-art-display-LLyBAS4e2wQ?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)'
   relative: true
   hiddenInList: true
 ---

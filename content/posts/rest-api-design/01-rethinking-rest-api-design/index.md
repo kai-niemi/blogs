@@ -14,7 +14,7 @@ series:
   - rest-api-design
 cover:
   image: "cover.webp"
-  caption: 'Photo by <a href="https://unsplash.com/@tingeyinjurylawfirm?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Tingey Injury Law Firm</a> on <a href="https://unsplash.com/photos/brown-concrete-statue-of-man-9SKhDFnw4c4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>'
+  caption: 'Photo by [Tingey Injury Law Firm](https://unsplash.com/@tingeyinjurylawfirm?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/brown-concrete-statue-of-man-9SKhDFnw4c4?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText)'
   relative: true
   hiddenInList: true
 ---

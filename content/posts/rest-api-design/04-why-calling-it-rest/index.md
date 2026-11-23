@@ -13,7 +13,7 @@ series:
   - rest-api-design
 cover:
   image: "cover.webp"
-  caption: 'Photo by <a href="https://unsplash.com/@xeyale?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Xeyale Aliyeva</a> on <a href="https://unsplash.com/photos/a-large-building-with-a-very-long-curved-roof-QBHSHrRsoeQ?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>'
+  caption: 'Photo by [Xeyale Aliyeva](https://unsplash.com/@xeyale?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/a-large-building-with-a-very-long-curved-roof-QBHSHrRsoeQ?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText)'
   relative: true
   hiddenInList: true
 ---

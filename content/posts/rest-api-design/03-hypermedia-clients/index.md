@@ -16,7 +16,7 @@ series:
   - rest-api-design
 cover:
   image: "cover.webp"
-  caption: 'Photo by <a href="https://unsplash.com/@imkaravisual?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Imkara Visual</a> on <a href="https://unsplash.com/photos/small-figure-stands-at-the-entrance-of-a-large-maze-rn2p-4hYTvU?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>'
+  caption: 'Photo by [Imkara Visual](https://unsplash.com/@imkaravisual?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText) on [Unsplash](https://unsplash.com/photos/small-figure-stands-at-the-entrance-of-a-large-maze-rn2p-4hYTvU?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText)'
   relative: true
   hiddenInList: true
 ---
