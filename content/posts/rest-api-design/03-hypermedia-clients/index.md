@@ -2,6 +2,7 @@
 title: "Building a Hypermedia-Driven REST Client"
 description: "Exploring an unfamiliar REST API through HAL and HAL-FORMS, from discovering its entry point to implementing an interactive Java client."
 date: 2026-11-22
+lastmod: 2026-11-23
 draft: false
 weight: 3
 tags:
@@ -15,6 +16,7 @@ series:
   - rest-api-design
 cover:
   image: "cover.webp"
+  caption: 'Photo by <a href="https://unsplash.com/@imkaravisual?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Imkara Visual</a> on <a href="https://unsplash.com/photos/small-figure-stands-at-the-entrance-of-a-large-maze-rn2p-4hYTvU?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>'
   relative: true
   hiddenInList: true
 ---
